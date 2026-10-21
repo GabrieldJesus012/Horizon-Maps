@@ -20,7 +20,11 @@ jobs:
           echo "PROJECT=$DIR" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: 17 }
-      - uses: android-actions/setup-android@v3
+      - name: Check the Android tools that come with the runner
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
       - name: Use the same signing key every time (so updates install over the old version)
         run: |
           if [ ! -f signing.keystore ]; then
@@ -33,13 +37,3 @@ jobs:
             git push
           fi
           mkdir -p ~/.android
-          cp signing.keystore ~/.android/debug.keystore
-      - uses: gradle/actions/setup-gradle@v4
-        with: { gradle-version: 8.14.4 }
-      - name: Build release APK
-        working-directory: ${{ env.PROJECT }}
-        run: gradle :app:assembleRelease -PtomtomApiKey="${{ secrets.TOMTOM_API_KEY }}"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: HorizonNav-apk
-          path: ${{ env.PROJECT }}/app/build/outputs/apk/release/*.apk
