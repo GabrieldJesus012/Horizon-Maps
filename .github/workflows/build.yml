@@ -1,0 +1,45 @@
+name: Build Horizon Nav
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack the uploaded zip
+        run: |
+          ZIP=$(ls *.zip | head -1)
+          if [ -z "$ZIP" ]; then echo "No zip uploaded yet"; exit 1; fi
+          echo "Using $ZIP"
+          unzip -q -o "$ZIP" -d src
+          DIR=$(dirname "$(find src -name settings.gradle.kts | head -1)")
+          echo "PROJECT=$DIR" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - name: Use the same signing key every time (so updates install over the old version)
+        run: |
+          if [ ! -f signing.keystore ]; then
+            keytool -genkeypair -keystore signing.keystore -storepass android -keypass android -alias androiddebugkey \
+              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+            git config user.name "github-actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git add signing.keystore
+            git commit -m "Add signing key"
+            git push
+          fi
+          mkdir -p ~/.android
+          cp signing.keystore ~/.android/debug.keystore
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: 8.14.4 }
+      - name: Build release APK
+        working-directory: ${{ env.PROJECT }}
+        run: gradle :app:assembleRelease -PtomtomApiKey="${{ secrets.TOMTOM_API_KEY }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HorizonNav-apk
+          path: ${{ env.PROJECT }}/app/build/outputs/apk/release/*.apk
