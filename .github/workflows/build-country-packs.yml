@@ -85,9 +85,22 @@ jobs:
             mkdir -p data
           fi
           df -h . /mnt || true
-          U="https://download.geofabrik.de/${{ matrix.area.path }}-latest.osm.pbf"
-          echo "Downloading $U"
-          curl -fL --retry 5 --retry-delay 20 -A "HorizonNav-pack-builder" -o data/region.osm.pbf "$U" || { echo "No extract at $U - check the path on download.geofabrik.de"; exit 1; }
+          # lots of jobs start together, so spread their downloads out a little, and keep trying if the server is busy;
+          # if Geofabrik won't give it, the same extract is fetched from the openstreetmap.fr mirror instead
+          sleep $(( RANDOM % 90 ))
+          P="${{ matrix.area.path }}"
+          ok=""
+          for U in "https://download.geofabrik.de/$P-latest.osm.pbf" "https://download.openstreetmap.fr/extracts/$P.osm.pbf"; do
+            for try in 1 2 3 4 5 6; do
+              echo "Downloading $U (try $try)"
+              if curl -fL --retry 3 --retry-all-errors --retry-delay 30 --connect-timeout 30 -A "HorizonNav-pack-builder" -o data/region.osm.pbf "$U" \
+                 && [ "$(stat -c%s data/region.osm.pbf)" -gt 10000 ]; then ok=1; break; fi
+              rm -f data/region.osm.pbf
+              sleep $(( 60 * try ))
+            done
+            [ -n "$ok" ] && break
+          done
+          [ -n "$ok" ] || { echo "Couldn't download $P from Geofabrik or the mirror - check the path on download.geofabrik.de"; exit 1; }
           ls -l data
           sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
 
@@ -267,8 +280,10 @@ jobs:
           done
           FILES=""
           for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv; do
-            [ -f "$f" ] && FILES="$FILES $f"
+            # GitHub won't take an empty file (an area with no traffic lights mapped, say): the app copes without it
+            [ -s "$f" ] && FILES="$FILES $f"
           done
+          [ -n "$FILES" ] || { echo "Nothing to publish"; exit 1; }
           ls -l $FILES
           gh release upload "${{ matrix.area.tag }}" $FILES --repo "${{ github.repository }}" --clobber
           echo "Download address: https://github.com/${{ github.repository }}/releases/download/${{ matrix.area.tag }}"
@@ -299,9 +314,22 @@ jobs:
             mkdir -p data
           fi
           df -h . /mnt || true
-          U="https://download.geofabrik.de/${{ matrix.area.path }}-latest.osm.pbf"
-          echo "Downloading $U"
-          curl -fL --retry 5 --retry-delay 20 -A "HorizonNav-pack-builder" -o data/region.osm.pbf "$U" || { echo "No extract at $U - check the path on download.geofabrik.de"; exit 1; }
+          # lots of jobs start together, so spread their downloads out a little, and keep trying if the server is busy;
+          # if Geofabrik won't give it, the same extract is fetched from the openstreetmap.fr mirror instead
+          sleep $(( RANDOM % 90 ))
+          P="${{ matrix.area.path }}"
+          ok=""
+          for U in "https://download.geofabrik.de/$P-latest.osm.pbf" "https://download.openstreetmap.fr/extracts/$P.osm.pbf"; do
+            for try in 1 2 3 4 5 6; do
+              echo "Downloading $U (try $try)"
+              if curl -fL --retry 3 --retry-all-errors --retry-delay 30 --connect-timeout 30 -A "HorizonNav-pack-builder" -o data/region.osm.pbf "$U" \
+                 && [ "$(stat -c%s data/region.osm.pbf)" -gt 10000 ]; then ok=1; break; fi
+              rm -f data/region.osm.pbf
+              sleep $(( 60 * try ))
+            done
+            [ -n "$ok" ] && break
+          done
+          [ -n "$ok" ] || { echo "Couldn't download $P from Geofabrik or the mirror - check the path on download.geofabrik.de"; exit 1; }
           ls -l data
           sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
 
@@ -481,8 +509,10 @@ jobs:
           done
           FILES=""
           for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv; do
-            [ -f "$f" ] && FILES="$FILES $f"
+            # GitHub won't take an empty file (an area with no traffic lights mapped, say): the app copes without it
+            [ -s "$f" ] && FILES="$FILES $f"
           done
+          [ -n "$FILES" ] || { echo "Nothing to publish"; exit 1; }
           ls -l $FILES
           gh release upload "${{ matrix.area.tag }}" $FILES --repo "${{ github.repository }}" --clobber
           echo "Download address: https://github.com/${{ github.repository }}/releases/download/${{ matrix.area.tag }}"
@@ -513,9 +543,22 @@ jobs:
             mkdir -p data
           fi
           df -h . /mnt || true
-          U="https://download.geofabrik.de/${{ matrix.area.path }}-latest.osm.pbf"
-          echo "Downloading $U"
-          curl -fL --retry 5 --retry-delay 20 -A "HorizonNav-pack-builder" -o data/region.osm.pbf "$U" || { echo "No extract at $U - check the path on download.geofabrik.de"; exit 1; }
+          # lots of jobs start together, so spread their downloads out a little, and keep trying if the server is busy;
+          # if Geofabrik won't give it, the same extract is fetched from the openstreetmap.fr mirror instead
+          sleep $(( RANDOM % 90 ))
+          P="${{ matrix.area.path }}"
+          ok=""
+          for U in "https://download.geofabrik.de/$P-latest.osm.pbf" "https://download.openstreetmap.fr/extracts/$P.osm.pbf"; do
+            for try in 1 2 3 4 5 6; do
+              echo "Downloading $U (try $try)"
+              if curl -fL --retry 3 --retry-all-errors --retry-delay 30 --connect-timeout 30 -A "HorizonNav-pack-builder" -o data/region.osm.pbf "$U" \
+                 && [ "$(stat -c%s data/region.osm.pbf)" -gt 10000 ]; then ok=1; break; fi
+              rm -f data/region.osm.pbf
+              sleep $(( 60 * try ))
+            done
+            [ -n "$ok" ] && break
+          done
+          [ -n "$ok" ] || { echo "Couldn't download $P from Geofabrik or the mirror - check the path on download.geofabrik.de"; exit 1; }
           ls -l data
           sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
 
@@ -695,8 +738,10 @@ jobs:
           done
           FILES=""
           for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv; do
-            [ -f "$f" ] && FILES="$FILES $f"
+            # GitHub won't take an empty file (an area with no traffic lights mapped, say): the app copes without it
+            [ -s "$f" ] && FILES="$FILES $f"
           done
+          [ -n "$FILES" ] || { echo "Nothing to publish"; exit 1; }
           ls -l $FILES
           gh release upload "${{ matrix.area.tag }}" $FILES --repo "${{ github.repository }}" --clobber
           echo "Download address: https://github.com/${{ github.repository }}/releases/download/${{ matrix.area.tag }}"
@@ -727,9 +772,22 @@ jobs:
             mkdir -p data
           fi
           df -h . /mnt || true
-          U="https://download.geofabrik.de/${{ matrix.area.path }}-latest.osm.pbf"
-          echo "Downloading $U"
-          curl -fL --retry 5 --retry-delay 20 -A "HorizonNav-pack-builder" -o data/region.osm.pbf "$U" || { echo "No extract at $U - check the path on download.geofabrik.de"; exit 1; }
+          # lots of jobs start together, so spread their downloads out a little, and keep trying if the server is busy;
+          # if Geofabrik won't give it, the same extract is fetched from the openstreetmap.fr mirror instead
+          sleep $(( RANDOM % 90 ))
+          P="${{ matrix.area.path }}"
+          ok=""
+          for U in "https://download.geofabrik.de/$P-latest.osm.pbf" "https://download.openstreetmap.fr/extracts/$P.osm.pbf"; do
+            for try in 1 2 3 4 5 6; do
+              echo "Downloading $U (try $try)"
+              if curl -fL --retry 3 --retry-all-errors --retry-delay 30 --connect-timeout 30 -A "HorizonNav-pack-builder" -o data/region.osm.pbf "$U" \
+                 && [ "$(stat -c%s data/region.osm.pbf)" -gt 10000 ]; then ok=1; break; fi
+              rm -f data/region.osm.pbf
+              sleep $(( 60 * try ))
+            done
+            [ -n "$ok" ] && break
+          done
+          [ -n "$ok" ] || { echo "Couldn't download $P from Geofabrik or the mirror - check the path on download.geofabrik.de"; exit 1; }
           ls -l data
           sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
 
@@ -909,8 +967,10 @@ jobs:
           done
           FILES=""
           for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv; do
-            [ -f "$f" ] && FILES="$FILES $f"
+            # GitHub won't take an empty file (an area with no traffic lights mapped, say): the app copes without it
+            [ -s "$f" ] && FILES="$FILES $f"
           done
+          [ -n "$FILES" ] || { echo "Nothing to publish"; exit 1; }
           ls -l $FILES
           gh release upload "${{ matrix.area.tag }}" $FILES --repo "${{ github.repository }}" --clobber
           echo "Download address: https://github.com/${{ github.repository }}/releases/download/${{ matrix.area.tag }}"
