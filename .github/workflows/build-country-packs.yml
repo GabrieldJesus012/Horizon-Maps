@@ -1,0 +1,264 @@
+# Builds offline packs (routing, map, search lists) for any country, US state or Canadian province, from the free OpenStreetMap
+# extracts on download.geofabrik.de, and publishes each as a GitHub release the app downloads from.
+#
+# Run it from the Actions tab: Build country packs > Run workflow, and type the areas as Geofabrik paths, separated by commas, e.g.
+#   europe/france, europe/germany, north-america/us/california, north-america/canada/ontario, south-america/brazil
+# (the path is the part of the Geofabrik download link between "download.geofabrik.de/" and "-latest.osm.pbf").
+#
+# Each area becomes the release "pack-<name>", with the continent left off: europe/france -> pack-france,
+# north-america/us/georgia -> pack-us-georgia. The app uses the same rule, so a pack appears in it as soon as its build finishes.
+# Every area is built as three jobs side by side (routing, map, search lists), so even big countries stay under GitHub's 6-hour limit.
+name: Build country packs
+on:
+  workflow_dispatch:
+    inputs:
+      regions:
+        description: "Geofabrik areas, comma separated (e.g. europe/france, north-america/us/texas)"
+        required: true
+        default: "europe/france"
+permissions:
+  contents: write
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      areas: ${{ steps.plan.outputs.areas }}
+    steps:
+      - name: Work out the release names and create the releases
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REGIONS: ${{ inputs.regions }}
+        run: |
+          python3 - <<'PY' > areas.json
+          import json, os
+          out = []
+          for p in os.environ["REGIONS"].replace("\n", ",").split(","):
+              p = p.strip().strip("/")
+              if not p: continue
+              if p.endswith("-latest.osm.pbf"): p = p[:-len("-latest.osm.pbf")]
+              p = p.replace("https://download.geofabrik.de/", "")
+              parts = p.split("/")
+              tag = "pack-" + "-".join(parts[1:] if len(parts) > 1 else parts)
+              out.append({"path": p, "tag": tag})
+          print(json.dumps(out))
+          PY
+          cat areas.json
+          for t in $(python3 -c "import json;print(' '.join(a['tag'] for a in json.load(open('areas.json'))))"); do
+            gh release create "$t" --repo "${{ github.repository }}" --title "$t" --notes "Offline pack for Horizon Nav" 2>/dev/null || echo "$t already exists"
+          done
+          echo "areas=$(cat areas.json)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      max-parallel: 9
+      matrix:
+        area: ${{ fromJson(needs.plan.outputs.areas) }}
+        part: [routing, map, lists]
+    name: ${{ matrix.area.tag }} ${{ matrix.part }}
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache /usr/local/share/boost /usr/share/swift /usr/local/.ghcup || true
+          sudo docker image prune -af > /dev/null || true
+          df -h /
+      - name: Download the OpenStreetMap extract
+        run: |
+          # work on whichever disk has more room (big countries need tens of GB along the way)
+          if [ -d /mnt ] && [ "$(df --output=avail /mnt | tail -1)" -gt "$(df --output=avail . | tail -1)" ]; then
+            sudo mkdir -p /mnt/data && sudo chown "$USER" /mnt/data && ln -s /mnt/data data
+          else
+            mkdir -p data
+          fi
+          df -h . /mnt || true
+          U="https://download.geofabrik.de/${{ matrix.area.path }}-latest.osm.pbf"
+          echo "Downloading $U"
+          curl -fL --retry 5 --retry-delay 20 -A "HorizonNav-pack-builder" -o data/region.osm.pbf "$U" || { echo "No extract at $U - check the path on download.geofabrik.de"; exit 1; }
+          ls -l data
+          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+
+      # ---------------- routing ----------------
+      - name: Build the routing tiles with Valhalla
+        if: matrix.part == 'routing'
+        run: |
+          docker run --rm -v "$PWD/data:/data" --entrypoint /bin/bash ghcr.io/valhalla/valhalla:latest -c '
+            set -e
+            cd /data
+            valhalla_build_config --mjolnir-tile-dir /data/tiles --mjolnir-tile-extract /data/tiles.tar --mjolnir-timezone /data/tz.sqlite --mjolnir-admin /data/admins.sqlite > valhalla.json
+            valhalla_build_timezones > tz.sqlite
+            valhalla_build_admins -c valhalla.json region.osm.pbf
+            valhalla_build_tiles -c valhalla.json region.osm.pbf
+            valhalla_build_extract -c valhalla.json -v
+            rm -rf /data/tiles
+          '
+          sudo chown -R "$USER" data
+          ls -l data
+
+      # ---------------- map ----------------
+      - name: Build the offline map (planetiler)
+        if: matrix.part == 'map'
+        run: |
+          MEM=$(( $(free -g | awk '/Mem:/{print $2}') - 3 ))
+          docker run --rm -e JAVA_TOOL_OPTIONS="-Xmx${MEM}g" -v "$PWD/data:/data" ghcr.io/onthegomap/planetiler:latest \
+            --osm-path=/data/region.osm.pbf --output=/data/map.pmtiles --download --download_dir=/data/sources \
+            --force --maxzoom=14 --fetch-wikidata=false --storage=mmap
+          sudo chown -R "$USER" data
+          rm -rf data/sources
+          ls -l data/map.pmtiles
+      - name: Fonts for the map labels
+        if: matrix.part == 'map'
+        run: |
+          curl -fL -o fonts-src.zip https://github.com/openmaptiles/fonts/releases/download/v2.0/v2.0.zip
+          mkdir -p fsrc fontout
+          unzip -q fonts-src.zip -d fsrc
+          for f in "Noto Sans Regular" "Noto Sans Bold"; do
+            d=$(find fsrc -type d -name "$f" | head -1)
+            echo "$f -> $d"
+            cp -r "$d" "fontout/$(echo "$f" | tr -d ' ')"
+          done
+          (cd fontout && zip -qr ../data/fonts.zip .)
+          ls -l data/fonts.zip
+
+      # ---------------- search lists, lamps and traffic lights ----------------
+      - name: Build a search list of streets, shops and places
+        if: matrix.part == 'lists'
+        run: |
+          osmium tags-filter data/region.osm.pbf w/highway nwr/amenity nwr/shop nwr/tourism nwr/leisure nwr/office nwr/railway=station nwr/place -o data/named.osm.pbf --overwrite
+          osmium export data/named.osm.pbf -f geojsonseq --geometry-types=point,linestring,polygon -o data/named.geojsonseq --overwrite
+          rm -f data/named.osm.pbf
+          python3 - <<'PY'
+          import json
+          roads = {"motorway","trunk","primary","secondary","tertiary","unclassified","residential","living_street","pedestrian","road","motorway_link","trunk_link","primary_link","secondary_link"}
+          seen = set(); n = 0
+          def mid(g):
+              c = g["coordinates"]
+              if g["type"] == "Point": return c[1], c[0]
+              if g["type"] == "LineString": p = c[len(c)//2]; return p[1], p[0]
+              if g["type"] == "Polygon": p = c[0][0]; return p[1], p[0]
+              return None
+          with open("data/named.geojsonseq", encoding="utf-8") as f, open("data/places.tsv", "w", encoding="utf-8") as out:
+              for line in f:
+                  line = line.strip().lstrip("\x1e")
+                  if not line: continue
+                  try: ft = json.loads(line)
+                  except Exception: continue
+                  pr = ft.get("properties") or {}
+                  name = (pr.get("name") or "").replace("\t", " ").strip()
+                  if not name or not ft.get("geometry"): continue
+                  hw = pr.get("highway")
+                  if hw:
+                      if hw not in roads: continue
+                      kind = "Street"
+                  else:
+                      kind = None
+                      for k in ("place", "amenity", "shop", "tourism", "leisure", "office", "railway"):
+                          if pr.get(k): kind = pr[k].replace("_", " ").capitalize(); break
+                      if kind is None: continue
+                  m = mid(ft["geometry"])
+                  if not m: continue
+                  key = hash((name.lower(), kind, round(m[0], 2), round(m[1], 2)))
+                  if key in seen: continue
+                  seen.add(key)
+                  out.write("%s\t%s\t%.5f\t%.5f\n" % (name, kind, m[0], m[1])); n += 1
+          print("places written:", n)
+          PY
+          rm -f data/named.geojsonseq
+          ls -l data/places.tsv
+      - name: Build house number and postcode lists
+        if: matrix.part == 'lists'
+        run: |
+          osmium tags-filter data/region.osm.pbf nwr/addr:housenumber -o data/addr.osm.pbf --overwrite
+          osmium export data/addr.osm.pbf -f geojsonseq --geometry-types=point,polygon -o data/addr.geojsonseq --overwrite
+          rm -f data/addr.osm.pbf
+          python3 - <<'PY'
+          import json
+          seen = set(); pcs = {}; n = 0
+          def pt(g):
+              c = g["coordinates"]
+              if g["type"] == "Point": return c[1], c[0]
+              if g["type"] == "Polygon":
+                  r = c[0]; k = len(r) - 1 if len(r) > 1 else 1
+                  return sum(p[1] for p in r[:k]) / k, sum(p[0] for p in r[:k]) / k
+              return None
+          def key(s): return "".join(ch.lower() if ch < "\x80" else ch for ch in s)
+          with open("data/addr.geojsonseq", encoding="utf-8") as f, open("data/addr.unsorted", "w", encoding="utf-8") as out:
+              for line in f:
+                  line = line.strip().lstrip("\x1e")
+                  if not line: continue
+                  try: ft = json.loads(line)
+                  except Exception: continue
+                  pr = ft.get("properties") or {}
+                  num = (pr.get("addr:housenumber") or "").replace("\t", " ").strip()
+                  street = (pr.get("addr:street") or pr.get("addr:place") or "").replace("\t", " ").strip()
+                  if not num or not street or not ft.get("geometry"): continue
+                  p = pt(ft["geometry"])
+                  if not p: continue
+                  pc = (pr.get("addr:postcode") or "").replace("\t", " ").strip().upper()
+                  h = hash((key(street), num.lower(), round(p[0], 4), round(p[1], 4)))
+                  if h in seen: continue
+                  seen.add(h)
+                  out.write("%s\t%s\t%s\t%.5f\t%.5f\t%s\n" % (key(street), street, num, p[0], p[1], pc)); n += 1
+                  if pc:
+                      a = pcs.get(pc)
+                      if a: a[0] += p[0]; a[1] += p[1]; a[2] += 1
+                      else: pcs[pc] = [p[0], p[1], 1]
+          with open("data/postcodes.tsv", "w", encoding="utf-8") as o:
+              for pc in sorted(pcs, key=lambda x: x.replace(" ", "")):
+                  a = pcs[pc]
+                  o.write("%s\t%s\t%.5f\t%.5f\n" % (pc.replace(" ", "").lower(), pc, a[0] / a[2], a[1] / a[2]))
+          print("addresses:", n, "postcodes:", len(pcs))
+          PY
+          rm -f data/addr.geojsonseq
+          LC_ALL=C sort -S 4G -T data -t "$(printf '\t')" -k1,1 data/addr.unsorted | cut -f2- > data/addresses.tsv
+          rm -f data/addr.unsorted
+          ls -l data/addresses.tsv data/postcodes.tsv
+      - name: Build street lamp and traffic light lists
+        if: matrix.part == 'lists'
+        run: |
+          for kind in street_lamp:lamps traffic_signals:signals; do
+            tag="${kind%%:*}"; out="${kind##*:}"
+            osmium tags-filter data/region.osm.pbf "n/highway=$tag" -o "data/$out.osm.pbf" --overwrite
+            osmium export "data/$out.osm.pbf" -f geojsonseq --geometry-types=point -o "data/$out.geojsonseq" --overwrite
+            python3 - "$out" <<'PY'
+          import json, math, sys
+          name = sys.argv[1]; n = 0
+          with open("data/%s.geojsonseq" % name, encoding="utf-8") as f, open("data/%s.unsorted" % name, "w") as o:
+              for line in f:
+                  line = line.lstrip("\x1e").strip()
+                  if not line: continue
+                  try: lon, lat = json.loads(line)["geometry"]["coordinates"]
+                  except Exception: continue
+                  x = min(32767, max(0, int((lon + 180.0) / 360.0 * 32768)))
+                  r = math.radians(lat)
+                  y = min(32767, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * 32768)))
+                  o.write("%05d%05d\t%.6f\t%.6f\n" % (y, x, lat, lon)); n += 1
+          print(name, n)
+          PY
+            LC_ALL=C sort -S 1G -T data "data/$out.unsorted" > "data/$out.tsv"
+            rm -f "data/$out.unsorted" "data/$out.osm.pbf" "data/$out.geojsonseq"
+          done
+          ls -l data/lamps.tsv data/signals.tsv
+
+      # ---------------- publish ----------------
+      - name: Publish to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -f data/region.osm.pbf data/tz.sqlite
+          # GitHub refuses release files of 2 GB or more, so a bigger file is cut into parts (the app joins them again)
+          for big in tiles.tar map.pmtiles addresses.tsv places.tsv; do
+            if [ -f "data/$big" ] && [ "$(stat -c%s data/$big)" -gt 1900000000 ]; then
+              split -b 1800M -d -a 2 "data/$big" "data/$big.part" && rm "data/$big"
+            fi
+          done
+          FILES=""
+          for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv; do
+            [ -f "$f" ] && FILES="$FILES $f"
+          done
+          ls -l $FILES
+          gh release upload "${{ matrix.area.tag }}" $FILES --repo "${{ github.repository }}" --clobber
+          echo "Download address: https://github.com/${{ github.repository }}/releases/download/${{ matrix.area.tag }}"
