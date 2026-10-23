@@ -3,6 +3,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: "Also publish the shareable app (the one with no key inside) to the download link"
+        type: boolean
+        default: false
 permissions:
   contents: write
 jobs:
@@ -45,3 +50,19 @@ jobs:
           name: HorizonNav-apk
           path: ${{ env.PROJECT }}/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+      # Only when you tick "publish" on Run workflow: the public APK goes to the release called "app", replacing the one there,
+      # so this link always gives the newest version:
+      #   https://github.com/<you>/<repo>/releases/download/app/HorizonNav-public.apk
+      # The personal APK (with your TomTom key) is never published.
+      - name: Publish the shareable app
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK="${{ env.PROJECT }}/app/build/outputs/apk/release/HorizonNav-public.apk"
+          [ -f "$APK" ] || { echo "No public APK was built"; exit 1; }
+          NOTES="Horizon Nav 1.0.${{ github.run_number }}, built $(date -u '+%-d %b %Y'). Download HorizonNav-public.apk below and install it over the old one."
+          gh release create app --repo "${{ github.repository }}" --title "Horizon Nav" --notes "$NOTES" --latest=false 2>/dev/null \
+            || gh release edit app --repo "${{ github.repository }}" --title "Horizon Nav (1.0.${{ github.run_number }})" --notes "$NOTES"
+          gh release upload app "$APK" --repo "${{ github.repository }}" --clobber
+          echo "Download link: https://github.com/${{ github.repository }}/releases/download/app/HorizonNav-public.apk"
