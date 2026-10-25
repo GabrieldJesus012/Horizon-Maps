@@ -313,12 +313,23 @@ jobs:
               for line in f:
                   line = line.lstrip("\x1e").strip()
                   if not line: continue
-                  try: lon, lat = json.loads(line)["geometry"]["coordinates"]
+                  try:
+                      ft = json.loads(line); lon, lat = ft["geometry"]["coordinates"]
                   except Exception: continue
+                  # which way the camera checks traffic, in degrees, when it's mapped (a 4th column; blank when not known)
+                  pr = ft.get("properties") or {}
+                  dv = str(pr.get("direction") or pr.get("camera:direction") or "").strip().upper()
+                  card = {"N":0,"NNE":22.5,"NE":45,"ENE":67.5,"E":90,"ESE":112.5,"SE":135,"SSE":157.5,"S":180,"SSW":202.5,"SW":225,"WSW":247.5,"W":270,"WNW":292.5,"NW":315,"NNW":337.5}
+                  d = ""
+                  if dv and ";" not in dv:
+                      if dv in card: d = "%g" % card[dv]
+                      else:
+                          try: d = "%g" % (float(dv) % 360.0)
+                          except ValueError: d = ""
                   x = min(32767, max(0, int((lon + 180.0) / 360.0 * 32768)))
                   r = math.radians(lat)
                   y = min(32767, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * 32768)))
-                  o.write("%05d%05d\t%.6f\t%.6f\n" % (y, x, lat, lon)); n += 1
+                  o.write("%05d%05d\t%.6f\t%.6f\t%s\n" % (y, x, lat, lon, d)); n += 1
           print("cameras", n)
           PY
           LC_ALL=C sort -S 1G -T data data/cameras.unsorted > data/cameras.tsv
@@ -690,12 +701,23 @@ jobs:
               for line in f:
                   line = line.lstrip("\x1e").strip()
                   if not line: continue
-                  try: lon, lat = json.loads(line)["geometry"]["coordinates"]
+                  try:
+                      ft = json.loads(line); lon, lat = ft["geometry"]["coordinates"]
                   except Exception: continue
+                  # which way the camera checks traffic, in degrees, when it's mapped (a 4th column; blank when not known)
+                  pr = ft.get("properties") or {}
+                  dv = str(pr.get("direction") or pr.get("camera:direction") or "").strip().upper()
+                  card = {"N":0,"NNE":22.5,"NE":45,"ENE":67.5,"E":90,"ESE":112.5,"SE":135,"SSE":157.5,"S":180,"SSW":202.5,"SW":225,"WSW":247.5,"W":270,"WNW":292.5,"NW":315,"NNW":337.5}
+                  d = ""
+                  if dv and ";" not in dv:
+                      if dv in card: d = "%g" % card[dv]
+                      else:
+                          try: d = "%g" % (float(dv) % 360.0)
+                          except ValueError: d = ""
                   x = min(32767, max(0, int((lon + 180.0) / 360.0 * 32768)))
                   r = math.radians(lat)
                   y = min(32767, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * 32768)))
-                  o.write("%05d%05d\t%.6f\t%.6f\n" % (y, x, lat, lon)); n += 1
+                  o.write("%05d%05d\t%.6f\t%.6f\t%s\n" % (y, x, lat, lon, d)); n += 1
           print("cameras", n)
           PY
           LC_ALL=C sort -S 1G -T data data/cameras.unsorted > data/cameras.tsv
@@ -1067,12 +1089,23 @@ jobs:
               for line in f:
                   line = line.lstrip("\x1e").strip()
                   if not line: continue
-                  try: lon, lat = json.loads(line)["geometry"]["coordinates"]
+                  try:
+                      ft = json.loads(line); lon, lat = ft["geometry"]["coordinates"]
                   except Exception: continue
+                  # which way the camera checks traffic, in degrees, when it's mapped (a 4th column; blank when not known)
+                  pr = ft.get("properties") or {}
+                  dv = str(pr.get("direction") or pr.get("camera:direction") or "").strip().upper()
+                  card = {"N":0,"NNE":22.5,"NE":45,"ENE":67.5,"E":90,"ESE":112.5,"SE":135,"SSE":157.5,"S":180,"SSW":202.5,"SW":225,"WSW":247.5,"W":270,"WNW":292.5,"NW":315,"NNW":337.5}
+                  d = ""
+                  if dv and ";" not in dv:
+                      if dv in card: d = "%g" % card[dv]
+                      else:
+                          try: d = "%g" % (float(dv) % 360.0)
+                          except ValueError: d = ""
                   x = min(32767, max(0, int((lon + 180.0) / 360.0 * 32768)))
                   r = math.radians(lat)
                   y = min(32767, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * 32768)))
-                  o.write("%05d%05d\t%.6f\t%.6f\n" % (y, x, lat, lon)); n += 1
+                  o.write("%05d%05d\t%.6f\t%.6f\t%s\n" % (y, x, lat, lon, d)); n += 1
           print("cameras", n)
           PY
           LC_ALL=C sort -S 1G -T data data/cameras.unsorted > data/cameras.tsv
@@ -1444,12 +1477,23 @@ jobs:
               for line in f:
                   line = line.lstrip("\x1e").strip()
                   if not line: continue
-                  try: lon, lat = json.loads(line)["geometry"]["coordinates"]
+                  try:
+                      ft = json.loads(line); lon, lat = ft["geometry"]["coordinates"]
                   except Exception: continue
+                  # which way the camera checks traffic, in degrees, when it's mapped (a 4th column; blank when not known)
+                  pr = ft.get("properties") or {}
+                  dv = str(pr.get("direction") or pr.get("camera:direction") or "").strip().upper()
+                  card = {"N":0,"NNE":22.5,"NE":45,"ENE":67.5,"E":90,"ESE":112.5,"SE":135,"SSE":157.5,"S":180,"SSW":202.5,"SW":225,"WSW":247.5,"W":270,"WNW":292.5,"NW":315,"NNW":337.5}
+                  d = ""
+                  if dv and ";" not in dv:
+                      if dv in card: d = "%g" % card[dv]
+                      else:
+                          try: d = "%g" % (float(dv) % 360.0)
+                          except ValueError: d = ""
                   x = min(32767, max(0, int((lon + 180.0) / 360.0 * 32768)))
                   r = math.radians(lat)
                   y = min(32767, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * 32768)))
-                  o.write("%05d%05d\t%.6f\t%.6f\n" % (y, x, lat, lon)); n += 1
+                  o.write("%05d%05d\t%.6f\t%.6f\t%s\n" % (y, x, lat, lon, d)); n += 1
           print("cameras", n)
           PY
           LC_ALL=C sort -S 1G -T data data/cameras.unsorted > data/cameras.tsv
