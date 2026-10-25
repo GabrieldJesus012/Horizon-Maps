@@ -7,6 +7,9 @@
 #
 # Each area becomes the release "pack-<name>", with the continent left off: europe/france -> pack-france,
 # north-america/us/georgia -> pack-us-georgia. The app uses the same rule, so a pack appears in it as soon as its build finishes.
+# Mode "extras only" just adds the speed limit and speed camera files to areas that are already built (minutes per area instead
+# of hours): use it to give older packs offline speed limits. The UK packs (built in HeadUnitOrbis) get theirs here too: type
+# "ew" (England & Wales) or "gb" (Great Britain) as the area, and their extras go in this repo's releases pack-ew and pack-gb.
 # Up to 320 areas can go in one run. Every area is built as three jobs side by side (routing, map, search lists), so even big countries stay under GitHub's 6-hour limit.
 name: Build country packs
 on:
@@ -16,6 +19,11 @@ on:
         description: "Geofabrik areas, comma separated (e.g. europe/france, north-america/us/texas)"
         required: true
         default: "europe/france"
+      mode:
+        description: "full = build everything; extras only = just add speed limits and cameras to packs already built"
+        type: choice
+        options: ["full", "extras only"]
+        default: "full"
 permissions:
   contents: write
 jobs:
@@ -27,12 +35,14 @@ jobs:
       a2: ${{ steps.plan.outputs.a2 }}
       a3: ${{ steps.plan.outputs.a3 }}
       a4: ${{ steps.plan.outputs.a4 }}
+      parts: ${{ steps.plan.outputs.parts }}
     steps:
       - name: Work out the release names and create the releases
         id: plan
         env:
           GH_TOKEN: ${{ github.token }}
           REGIONS: ${{ inputs.regions }}
+          MODE: ${{ inputs.mode }}
         run: |
           python3 - <<'PY' > areas.json
           import json, os
@@ -42,6 +52,9 @@ jobs:
               if not p: continue
               if p.endswith("-latest.osm.pbf"): p = p[:-len("-latest.osm.pbf")]
               p = p.replace("https://download.geofabrik.de/", "")
+              # the UK packs from HeadUnitOrbis: their extras are built from the Great Britain extract
+              if p.lower() in ("ew", "gb"):
+                  out.append({"path": "europe/great-britain", "tag": "pack-" + p.lower()}); continue
               parts = p.split("/")
               tag = "pack-" + "-".join(parts[1:] if len(parts) > 1 else parts)
               out.append({"path": p, "tag": tag})
@@ -57,6 +70,8 @@ jobs:
           if len(a) > 320: raise SystemExit("Too many areas in one run (%d): the most is 320" % len(a))
           for i in range(4):
               print("a%d=%s" % (i + 1, json.dumps(a[i * 80:(i + 1) * 80])))
+          import os
+          print("parts=%s" % json.dumps(["extras"] if os.environ.get("MODE") == "extras only" else ["routing", "map", "lists"]))
           PY
 
   build1:
@@ -68,7 +83,7 @@ jobs:
       fail-fast: false
       matrix:
         area: ${{ fromJson(needs.plan.outputs.a1) }}
-        part: [routing, map, lists]
+        part: ${{ fromJson(needs.plan.outputs.parts) }}
     name: ${{ matrix.area.tag }} ${{ matrix.part }}
     steps:
       - name: Free up disk space
@@ -88,6 +103,7 @@ jobs:
           # lots of jobs start together, so spread their downloads out a little, and keep trying if the server is busy;
           # if Geofabrik won't give it, the same extract is fetched from the openstreetmap.fr mirror instead
           sleep $(( RANDOM % 90 ))
+          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
           P="${{ matrix.area.path }}"
           ok=""
           for U in "https://download.geofabrik.de/$P-latest.osm.pbf" "https://download.openstreetmap.fr/extracts/$P.osm.pbf"; do
@@ -102,7 +118,6 @@ jobs:
           done
           [ -n "$ok" ] || { echo "Couldn't download $P from Geofabrik or the mirror - check the path on download.geofabrik.de"; exit 1; }
           ls -l data
-          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
 
       # ---------------- routing ----------------
       - name: Build the routing tiles with Valhalla
@@ -191,6 +206,24 @@ jobs:
           PY
           rm -f data/named.geojsonseq
           ls -l data/places.tsv
+          # a word index for the search list: every word of every name with where its line starts in places.tsv, sorted, so the
+          # app can find names by their first letters without reading the whole list
+          python3 - <<'PY'
+          import re
+          wre = re.compile(r"[^\w]+")
+          n = 0
+          with open("data/places.tsv", "rb") as f, open("data/names.unsorted", "w", encoding="utf-8") as o:
+              off = 0
+              for raw in f:
+                  name = raw.decode("utf-8", "replace").split("\t", 1)[0].lower()
+                  for w in set(x for x in wre.split(name) if len(x) >= 2):
+                      o.write("%s\t%d\n" % (w, off)); n += 1
+                  off += len(raw)
+          print("index entries:", n)
+          PY
+          LC_ALL=C sort -S 3G -T data data/names.unsorted > data/names.idx
+          rm -f data/names.unsorted
+          ls -l data/names.idx
       - name: Build house number and postcode lists
         if: matrix.part == 'lists'
         run: |
@@ -266,6 +299,135 @@ jobs:
           done
           ls -l data/lamps.tsv data/signals.tsv
 
+      # ---------------- speed limits and speed cameras (full builds and "extras only") ----------------
+      - name: Build speed limit and speed camera lists
+        if: matrix.part == 'lists' || matrix.part == 'extras'
+        run: |
+          # speed cameras: the same tile-sorted list as the traffic lights
+          osmium tags-filter data/region.osm.pbf "n/highway=speed_camera" -o data/cams.osm.pbf --overwrite
+          osmium export data/cams.osm.pbf -f geojsonseq --geometry-types=point -o data/cams.geojsonseq --overwrite
+          python3 - <<'PY'
+          import json, math
+          n = 0
+          with open("data/cams.geojsonseq", encoding="utf-8") as f, open("data/cameras.unsorted", "w") as o:
+              for line in f:
+                  line = line.lstrip("\x1e").strip()
+                  if not line: continue
+                  try: lon, lat = json.loads(line)["geometry"]["coordinates"]
+                  except Exception: continue
+                  x = min(32767, max(0, int((lon + 180.0) / 360.0 * 32768)))
+                  r = math.radians(lat)
+                  y = min(32767, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * 32768)))
+                  o.write("%05d%05d\t%.6f\t%.6f\n" % (y, x, lat, lon)); n += 1
+          print("cameras", n)
+          PY
+          LC_ALL=C sort -S 1G -T data data/cameras.unsorted > data/cameras.tsv
+          rm -f data/cameras.unsorted data/cams.osm.pbf data/cams.geojsonseq
+          # every road a car can use, with its speed limit tags and shape, grouped by zoom-14 tile (see OfflineLimits.kt in the app)
+          osmium tags-filter data/region.osm.pbf w/highway=motorway,motorway_link,trunk,trunk_link,primary,primary_link,secondary,secondary_link,tertiary,tertiary_link,unclassified,residential,living_street,service,road -o data/roads.osm.pbf --overwrite
+          osmium export data/roads.osm.pbf -f geojsonseq --geometry-types=linestring --add-unique-id=type_id -o data/roads.geojsonseq --overwrite
+          rm -f data/roads.osm.pbf
+          python3 - <<'PY'
+          import json, math, base64
+          HW = ["motorway","motorway_link","trunk","trunk_link","primary","primary_link","secondary","secondary_link","tertiary","tertiary_link","unclassified","residential","living_street","service","road"]
+          HI = {h: i for i, h in enumerate(HW)}
+          Z = 16384
+          def tile(lat, lon):
+              x = min(Z - 1, max(0, int((lon + 180.0) / 360.0 * Z)))
+              r = math.radians(max(-85.0, min(85.0, lat)))
+              y = min(Z - 1, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * Z)))
+              return y * Z + x
+          def uv(n, out):
+              while True:
+                  b = n & 0x7f; n >>= 7
+                  if n: out.append(b | 0x80)
+                  else: out.append(b); return
+          def zz(n): return (n << 1) ^ (n >> 63)
+          def st(s, out):
+              b = str(s or "").replace("\t", " ").encode("utf-8")[:255]
+              uv(len(b), out); out.extend(b)
+          n = 0
+          with open("data/roads.geojsonseq", encoding="utf-8") as f, open("data/limits.unsorted", "w") as o:
+              for line in f:
+                  line = line.lstrip("\x1e").strip()
+                  if not line: continue
+                  try: ft = json.loads(line)
+                  except Exception: continue
+                  g = ft.get("geometry") or {}
+                  if g.get("type") != "LineString": continue
+                  pr = ft.get("properties") or {}
+                  hw = pr.get("highway")
+                  if hw not in HI: continue
+                  # driveways and car park aisles are left out (they only get in the way of matching the road you're on)
+                  if hw == "service" and pr.get("service") and not pr.get("maxspeed"): continue
+                  c = g.get("coordinates") or []
+                  if len(c) < 2: continue
+                  fid = str(ft.get("id", "w0"))
+                  wid = int(fid[1:]) if fid[1:].isdigit() else 0
+                  ow = str(pr.get("oneway", "")).lower(); jn = str(pr.get("junction", "")).lower()
+                  flags = (1 if ow in ("yes", "true", "1") else 0) | (2 if ow == "-1" else 0) | (4 if jn in ("roundabout", "circular") else 0)
+                  mt = pr.get("maxspeed:type") or pr.get("source:maxspeed") or pr.get("zone:maxspeed") or ""
+                  pts = [(int(round(p[1] * 1e5)), int(round(p[0] * 1e5))) for p in c]
+                  dd = [pts[0]]
+                  for q in pts[1:]:
+                      if q != dd[-1]: dd.append(q)
+                  if len(dd) < 2: continue
+                  rec = bytearray([HI[hw], flags]); uv(wid, rec)
+                  for s in (pr.get("name"), pr.get("ref"), pr.get("maxspeed"), mt, pr.get("maxspeed:forward"), pr.get("maxspeed:backward")): st(s, rec)
+                  uv(len(dd), rec); uv(dd[0][0] + 9000000, rec); uv(dd[0][1] + 18000000, rec)
+                  for i in range(1, len(dd)):
+                      uv(zz(dd[i][0] - dd[i - 1][0]), rec); uv(zz(dd[i][1] - dd[i - 1][1]), rec)
+                  keys = set()
+                  for i in range(len(c) - 1):
+                      a = c[i]; b = c[i + 1]
+                      dy = (b[1] - a[1]) * 111320.0; dx = (b[0] - a[0]) * 111320.0 * math.cos(math.radians(a[1]))
+                      steps = int(math.hypot(dx, dy) / 100.0) + 1
+                      for k in range(steps + 1):
+                          t = k / steps
+                          keys.add(tile(a[1] + (b[1] - a[1]) * t, a[0] + (b[0] - a[0]) * t))
+                  enc = base64.b64encode(bytes(rec)).decode()
+                  for k in keys: o.write("%09d\t%s\n" % (k, enc))
+                  n += 1
+          print("roads", n)
+          PY
+          rm -f data/roads.geojsonseq
+          LC_ALL=C sort -S 3G -T data data/limits.unsorted > data/limits.sorted
+          rm -f data/limits.unsorted
+          python3 - <<'PY'
+          import base64, zlib, struct
+          def uv(n, out):
+              while True:
+                  b = n & 0x7f; n >>= 7
+                  if n: out.append(b | 0x80)
+                  else: out.append(b); return
+          idx = []; state = {"off": 0, "cur": None, "recs": []}
+          def flush(o):
+              if state["cur"] is None: return
+              blob = bytearray(); uv(len(state["recs"]), blob)
+              for r in state["recs"]: blob.extend(r)
+              z = zlib.compress(bytes(blob), 9)
+              o.write(z); idx.append((state["cur"], state["off"], len(z))); state["off"] += len(z)
+          with open("data/limits.sorted") as f, open("data/limits.blobs", "wb") as o:
+              for line in f:
+                  k, _, e = line.rstrip("\n").partition("\t")
+                  k = int(k)
+                  if k != state["cur"]:
+                      flush(o); state["cur"] = k; state["recs"] = []
+                  state["recs"].append(base64.b64decode(e))
+              flush(o)
+          with open("data/limits.bin", "wb") as o:
+              o.write(b"HNL1"); o.write(struct.pack(">II", 14, len(idx)))
+              for k, of, ln in idx: o.write(struct.pack(">III", k, of, ln))
+              with open("data/limits.blobs", "rb") as b:
+                  while True:
+                      ch = b.read(1 << 20)
+                      if not ch: break
+                      o.write(ch)
+          print("tiles", len(idx))
+          PY
+          rm -f data/limits.sorted data/limits.blobs
+          ls -l data/cameras.tsv data/limits.bin
+
       # ---------------- publish ----------------
       - name: Publish to the release
         env:
@@ -273,17 +435,18 @@ jobs:
         run: |
           rm -f data/region.osm.pbf data/tz.sqlite
           # GitHub refuses release files of 2 GB or more, so a bigger file is cut into parts (the app joins them again)
-          for big in tiles.tar map.pmtiles addresses.tsv places.tsv; do
+          for big in tiles.tar map.pmtiles addresses.tsv places.tsv names.idx; do
             if [ -f "data/$big" ] && [ "$(stat -c%s data/$big)" -gt 1900000000 ]; then
               split -b 1800M -d -a 2 "data/$big" "data/$big.part" && rm "data/$big"
             fi
           done
           FILES=""
-          for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv; do
+          for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/names.idx data/names.idx.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv data/cameras.tsv data/limits.bin; do
             # GitHub won't take an empty file (an area with no traffic lights mapped, say): the app copes without it
             [ -s "$f" ] && FILES="$FILES $f"
           done
           [ -n "$FILES" ] || { echo "Nothing to publish"; exit 1; }
+          # (in "extras only" mode just the speed limit and camera files are here: the rest of the release is left as it is)
           ls -l $FILES
           gh release upload "${{ matrix.area.tag }}" $FILES --repo "${{ github.repository }}" --clobber
           echo "Download address: https://github.com/${{ github.repository }}/releases/download/${{ matrix.area.tag }}"
@@ -297,7 +460,7 @@ jobs:
       fail-fast: false
       matrix:
         area: ${{ fromJson(needs.plan.outputs.a2) }}
-        part: [routing, map, lists]
+        part: ${{ fromJson(needs.plan.outputs.parts) }}
     name: ${{ matrix.area.tag }} ${{ matrix.part }}
     steps:
       - name: Free up disk space
@@ -317,6 +480,7 @@ jobs:
           # lots of jobs start together, so spread their downloads out a little, and keep trying if the server is busy;
           # if Geofabrik won't give it, the same extract is fetched from the openstreetmap.fr mirror instead
           sleep $(( RANDOM % 90 ))
+          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
           P="${{ matrix.area.path }}"
           ok=""
           for U in "https://download.geofabrik.de/$P-latest.osm.pbf" "https://download.openstreetmap.fr/extracts/$P.osm.pbf"; do
@@ -331,7 +495,6 @@ jobs:
           done
           [ -n "$ok" ] || { echo "Couldn't download $P from Geofabrik or the mirror - check the path on download.geofabrik.de"; exit 1; }
           ls -l data
-          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
 
       # ---------------- routing ----------------
       - name: Build the routing tiles with Valhalla
@@ -420,6 +583,24 @@ jobs:
           PY
           rm -f data/named.geojsonseq
           ls -l data/places.tsv
+          # a word index for the search list: every word of every name with where its line starts in places.tsv, sorted, so the
+          # app can find names by their first letters without reading the whole list
+          python3 - <<'PY'
+          import re
+          wre = re.compile(r"[^\w]+")
+          n = 0
+          with open("data/places.tsv", "rb") as f, open("data/names.unsorted", "w", encoding="utf-8") as o:
+              off = 0
+              for raw in f:
+                  name = raw.decode("utf-8", "replace").split("\t", 1)[0].lower()
+                  for w in set(x for x in wre.split(name) if len(x) >= 2):
+                      o.write("%s\t%d\n" % (w, off)); n += 1
+                  off += len(raw)
+          print("index entries:", n)
+          PY
+          LC_ALL=C sort -S 3G -T data data/names.unsorted > data/names.idx
+          rm -f data/names.unsorted
+          ls -l data/names.idx
       - name: Build house number and postcode lists
         if: matrix.part == 'lists'
         run: |
@@ -495,6 +676,135 @@ jobs:
           done
           ls -l data/lamps.tsv data/signals.tsv
 
+      # ---------------- speed limits and speed cameras (full builds and "extras only") ----------------
+      - name: Build speed limit and speed camera lists
+        if: matrix.part == 'lists' || matrix.part == 'extras'
+        run: |
+          # speed cameras: the same tile-sorted list as the traffic lights
+          osmium tags-filter data/region.osm.pbf "n/highway=speed_camera" -o data/cams.osm.pbf --overwrite
+          osmium export data/cams.osm.pbf -f geojsonseq --geometry-types=point -o data/cams.geojsonseq --overwrite
+          python3 - <<'PY'
+          import json, math
+          n = 0
+          with open("data/cams.geojsonseq", encoding="utf-8") as f, open("data/cameras.unsorted", "w") as o:
+              for line in f:
+                  line = line.lstrip("\x1e").strip()
+                  if not line: continue
+                  try: lon, lat = json.loads(line)["geometry"]["coordinates"]
+                  except Exception: continue
+                  x = min(32767, max(0, int((lon + 180.0) / 360.0 * 32768)))
+                  r = math.radians(lat)
+                  y = min(32767, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * 32768)))
+                  o.write("%05d%05d\t%.6f\t%.6f\n" % (y, x, lat, lon)); n += 1
+          print("cameras", n)
+          PY
+          LC_ALL=C sort -S 1G -T data data/cameras.unsorted > data/cameras.tsv
+          rm -f data/cameras.unsorted data/cams.osm.pbf data/cams.geojsonseq
+          # every road a car can use, with its speed limit tags and shape, grouped by zoom-14 tile (see OfflineLimits.kt in the app)
+          osmium tags-filter data/region.osm.pbf w/highway=motorway,motorway_link,trunk,trunk_link,primary,primary_link,secondary,secondary_link,tertiary,tertiary_link,unclassified,residential,living_street,service,road -o data/roads.osm.pbf --overwrite
+          osmium export data/roads.osm.pbf -f geojsonseq --geometry-types=linestring --add-unique-id=type_id -o data/roads.geojsonseq --overwrite
+          rm -f data/roads.osm.pbf
+          python3 - <<'PY'
+          import json, math, base64
+          HW = ["motorway","motorway_link","trunk","trunk_link","primary","primary_link","secondary","secondary_link","tertiary","tertiary_link","unclassified","residential","living_street","service","road"]
+          HI = {h: i for i, h in enumerate(HW)}
+          Z = 16384
+          def tile(lat, lon):
+              x = min(Z - 1, max(0, int((lon + 180.0) / 360.0 * Z)))
+              r = math.radians(max(-85.0, min(85.0, lat)))
+              y = min(Z - 1, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * Z)))
+              return y * Z + x
+          def uv(n, out):
+              while True:
+                  b = n & 0x7f; n >>= 7
+                  if n: out.append(b | 0x80)
+                  else: out.append(b); return
+          def zz(n): return (n << 1) ^ (n >> 63)
+          def st(s, out):
+              b = str(s or "").replace("\t", " ").encode("utf-8")[:255]
+              uv(len(b), out); out.extend(b)
+          n = 0
+          with open("data/roads.geojsonseq", encoding="utf-8") as f, open("data/limits.unsorted", "w") as o:
+              for line in f:
+                  line = line.lstrip("\x1e").strip()
+                  if not line: continue
+                  try: ft = json.loads(line)
+                  except Exception: continue
+                  g = ft.get("geometry") or {}
+                  if g.get("type") != "LineString": continue
+                  pr = ft.get("properties") or {}
+                  hw = pr.get("highway")
+                  if hw not in HI: continue
+                  # driveways and car park aisles are left out (they only get in the way of matching the road you're on)
+                  if hw == "service" and pr.get("service") and not pr.get("maxspeed"): continue
+                  c = g.get("coordinates") or []
+                  if len(c) < 2: continue
+                  fid = str(ft.get("id", "w0"))
+                  wid = int(fid[1:]) if fid[1:].isdigit() else 0
+                  ow = str(pr.get("oneway", "")).lower(); jn = str(pr.get("junction", "")).lower()
+                  flags = (1 if ow in ("yes", "true", "1") else 0) | (2 if ow == "-1" else 0) | (4 if jn in ("roundabout", "circular") else 0)
+                  mt = pr.get("maxspeed:type") or pr.get("source:maxspeed") or pr.get("zone:maxspeed") or ""
+                  pts = [(int(round(p[1] * 1e5)), int(round(p[0] * 1e5))) for p in c]
+                  dd = [pts[0]]
+                  for q in pts[1:]:
+                      if q != dd[-1]: dd.append(q)
+                  if len(dd) < 2: continue
+                  rec = bytearray([HI[hw], flags]); uv(wid, rec)
+                  for s in (pr.get("name"), pr.get("ref"), pr.get("maxspeed"), mt, pr.get("maxspeed:forward"), pr.get("maxspeed:backward")): st(s, rec)
+                  uv(len(dd), rec); uv(dd[0][0] + 9000000, rec); uv(dd[0][1] + 18000000, rec)
+                  for i in range(1, len(dd)):
+                      uv(zz(dd[i][0] - dd[i - 1][0]), rec); uv(zz(dd[i][1] - dd[i - 1][1]), rec)
+                  keys = set()
+                  for i in range(len(c) - 1):
+                      a = c[i]; b = c[i + 1]
+                      dy = (b[1] - a[1]) * 111320.0; dx = (b[0] - a[0]) * 111320.0 * math.cos(math.radians(a[1]))
+                      steps = int(math.hypot(dx, dy) / 100.0) + 1
+                      for k in range(steps + 1):
+                          t = k / steps
+                          keys.add(tile(a[1] + (b[1] - a[1]) * t, a[0] + (b[0] - a[0]) * t))
+                  enc = base64.b64encode(bytes(rec)).decode()
+                  for k in keys: o.write("%09d\t%s\n" % (k, enc))
+                  n += 1
+          print("roads", n)
+          PY
+          rm -f data/roads.geojsonseq
+          LC_ALL=C sort -S 3G -T data data/limits.unsorted > data/limits.sorted
+          rm -f data/limits.unsorted
+          python3 - <<'PY'
+          import base64, zlib, struct
+          def uv(n, out):
+              while True:
+                  b = n & 0x7f; n >>= 7
+                  if n: out.append(b | 0x80)
+                  else: out.append(b); return
+          idx = []; state = {"off": 0, "cur": None, "recs": []}
+          def flush(o):
+              if state["cur"] is None: return
+              blob = bytearray(); uv(len(state["recs"]), blob)
+              for r in state["recs"]: blob.extend(r)
+              z = zlib.compress(bytes(blob), 9)
+              o.write(z); idx.append((state["cur"], state["off"], len(z))); state["off"] += len(z)
+          with open("data/limits.sorted") as f, open("data/limits.blobs", "wb") as o:
+              for line in f:
+                  k, _, e = line.rstrip("\n").partition("\t")
+                  k = int(k)
+                  if k != state["cur"]:
+                      flush(o); state["cur"] = k; state["recs"] = []
+                  state["recs"].append(base64.b64decode(e))
+              flush(o)
+          with open("data/limits.bin", "wb") as o:
+              o.write(b"HNL1"); o.write(struct.pack(">II", 14, len(idx)))
+              for k, of, ln in idx: o.write(struct.pack(">III", k, of, ln))
+              with open("data/limits.blobs", "rb") as b:
+                  while True:
+                      ch = b.read(1 << 20)
+                      if not ch: break
+                      o.write(ch)
+          print("tiles", len(idx))
+          PY
+          rm -f data/limits.sorted data/limits.blobs
+          ls -l data/cameras.tsv data/limits.bin
+
       # ---------------- publish ----------------
       - name: Publish to the release
         env:
@@ -502,17 +812,18 @@ jobs:
         run: |
           rm -f data/region.osm.pbf data/tz.sqlite
           # GitHub refuses release files of 2 GB or more, so a bigger file is cut into parts (the app joins them again)
-          for big in tiles.tar map.pmtiles addresses.tsv places.tsv; do
+          for big in tiles.tar map.pmtiles addresses.tsv places.tsv names.idx; do
             if [ -f "data/$big" ] && [ "$(stat -c%s data/$big)" -gt 1900000000 ]; then
               split -b 1800M -d -a 2 "data/$big" "data/$big.part" && rm "data/$big"
             fi
           done
           FILES=""
-          for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv; do
+          for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/names.idx data/names.idx.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv data/cameras.tsv data/limits.bin; do
             # GitHub won't take an empty file (an area with no traffic lights mapped, say): the app copes without it
             [ -s "$f" ] && FILES="$FILES $f"
           done
           [ -n "$FILES" ] || { echo "Nothing to publish"; exit 1; }
+          # (in "extras only" mode just the speed limit and camera files are here: the rest of the release is left as it is)
           ls -l $FILES
           gh release upload "${{ matrix.area.tag }}" $FILES --repo "${{ github.repository }}" --clobber
           echo "Download address: https://github.com/${{ github.repository }}/releases/download/${{ matrix.area.tag }}"
@@ -526,7 +837,7 @@ jobs:
       fail-fast: false
       matrix:
         area: ${{ fromJson(needs.plan.outputs.a3) }}
-        part: [routing, map, lists]
+        part: ${{ fromJson(needs.plan.outputs.parts) }}
     name: ${{ matrix.area.tag }} ${{ matrix.part }}
     steps:
       - name: Free up disk space
@@ -546,6 +857,7 @@ jobs:
           # lots of jobs start together, so spread their downloads out a little, and keep trying if the server is busy;
           # if Geofabrik won't give it, the same extract is fetched from the openstreetmap.fr mirror instead
           sleep $(( RANDOM % 90 ))
+          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
           P="${{ matrix.area.path }}"
           ok=""
           for U in "https://download.geofabrik.de/$P-latest.osm.pbf" "https://download.openstreetmap.fr/extracts/$P.osm.pbf"; do
@@ -560,7 +872,6 @@ jobs:
           done
           [ -n "$ok" ] || { echo "Couldn't download $P from Geofabrik or the mirror - check the path on download.geofabrik.de"; exit 1; }
           ls -l data
-          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
 
       # ---------------- routing ----------------
       - name: Build the routing tiles with Valhalla
@@ -649,6 +960,24 @@ jobs:
           PY
           rm -f data/named.geojsonseq
           ls -l data/places.tsv
+          # a word index for the search list: every word of every name with where its line starts in places.tsv, sorted, so the
+          # app can find names by their first letters without reading the whole list
+          python3 - <<'PY'
+          import re
+          wre = re.compile(r"[^\w]+")
+          n = 0
+          with open("data/places.tsv", "rb") as f, open("data/names.unsorted", "w", encoding="utf-8") as o:
+              off = 0
+              for raw in f:
+                  name = raw.decode("utf-8", "replace").split("\t", 1)[0].lower()
+                  for w in set(x for x in wre.split(name) if len(x) >= 2):
+                      o.write("%s\t%d\n" % (w, off)); n += 1
+                  off += len(raw)
+          print("index entries:", n)
+          PY
+          LC_ALL=C sort -S 3G -T data data/names.unsorted > data/names.idx
+          rm -f data/names.unsorted
+          ls -l data/names.idx
       - name: Build house number and postcode lists
         if: matrix.part == 'lists'
         run: |
@@ -724,6 +1053,135 @@ jobs:
           done
           ls -l data/lamps.tsv data/signals.tsv
 
+      # ---------------- speed limits and speed cameras (full builds and "extras only") ----------------
+      - name: Build speed limit and speed camera lists
+        if: matrix.part == 'lists' || matrix.part == 'extras'
+        run: |
+          # speed cameras: the same tile-sorted list as the traffic lights
+          osmium tags-filter data/region.osm.pbf "n/highway=speed_camera" -o data/cams.osm.pbf --overwrite
+          osmium export data/cams.osm.pbf -f geojsonseq --geometry-types=point -o data/cams.geojsonseq --overwrite
+          python3 - <<'PY'
+          import json, math
+          n = 0
+          with open("data/cams.geojsonseq", encoding="utf-8") as f, open("data/cameras.unsorted", "w") as o:
+              for line in f:
+                  line = line.lstrip("\x1e").strip()
+                  if not line: continue
+                  try: lon, lat = json.loads(line)["geometry"]["coordinates"]
+                  except Exception: continue
+                  x = min(32767, max(0, int((lon + 180.0) / 360.0 * 32768)))
+                  r = math.radians(lat)
+                  y = min(32767, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * 32768)))
+                  o.write("%05d%05d\t%.6f\t%.6f\n" % (y, x, lat, lon)); n += 1
+          print("cameras", n)
+          PY
+          LC_ALL=C sort -S 1G -T data data/cameras.unsorted > data/cameras.tsv
+          rm -f data/cameras.unsorted data/cams.osm.pbf data/cams.geojsonseq
+          # every road a car can use, with its speed limit tags and shape, grouped by zoom-14 tile (see OfflineLimits.kt in the app)
+          osmium tags-filter data/region.osm.pbf w/highway=motorway,motorway_link,trunk,trunk_link,primary,primary_link,secondary,secondary_link,tertiary,tertiary_link,unclassified,residential,living_street,service,road -o data/roads.osm.pbf --overwrite
+          osmium export data/roads.osm.pbf -f geojsonseq --geometry-types=linestring --add-unique-id=type_id -o data/roads.geojsonseq --overwrite
+          rm -f data/roads.osm.pbf
+          python3 - <<'PY'
+          import json, math, base64
+          HW = ["motorway","motorway_link","trunk","trunk_link","primary","primary_link","secondary","secondary_link","tertiary","tertiary_link","unclassified","residential","living_street","service","road"]
+          HI = {h: i for i, h in enumerate(HW)}
+          Z = 16384
+          def tile(lat, lon):
+              x = min(Z - 1, max(0, int((lon + 180.0) / 360.0 * Z)))
+              r = math.radians(max(-85.0, min(85.0, lat)))
+              y = min(Z - 1, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * Z)))
+              return y * Z + x
+          def uv(n, out):
+              while True:
+                  b = n & 0x7f; n >>= 7
+                  if n: out.append(b | 0x80)
+                  else: out.append(b); return
+          def zz(n): return (n << 1) ^ (n >> 63)
+          def st(s, out):
+              b = str(s or "").replace("\t", " ").encode("utf-8")[:255]
+              uv(len(b), out); out.extend(b)
+          n = 0
+          with open("data/roads.geojsonseq", encoding="utf-8") as f, open("data/limits.unsorted", "w") as o:
+              for line in f:
+                  line = line.lstrip("\x1e").strip()
+                  if not line: continue
+                  try: ft = json.loads(line)
+                  except Exception: continue
+                  g = ft.get("geometry") or {}
+                  if g.get("type") != "LineString": continue
+                  pr = ft.get("properties") or {}
+                  hw = pr.get("highway")
+                  if hw not in HI: continue
+                  # driveways and car park aisles are left out (they only get in the way of matching the road you're on)
+                  if hw == "service" and pr.get("service") and not pr.get("maxspeed"): continue
+                  c = g.get("coordinates") or []
+                  if len(c) < 2: continue
+                  fid = str(ft.get("id", "w0"))
+                  wid = int(fid[1:]) if fid[1:].isdigit() else 0
+                  ow = str(pr.get("oneway", "")).lower(); jn = str(pr.get("junction", "")).lower()
+                  flags = (1 if ow in ("yes", "true", "1") else 0) | (2 if ow == "-1" else 0) | (4 if jn in ("roundabout", "circular") else 0)
+                  mt = pr.get("maxspeed:type") or pr.get("source:maxspeed") or pr.get("zone:maxspeed") or ""
+                  pts = [(int(round(p[1] * 1e5)), int(round(p[0] * 1e5))) for p in c]
+                  dd = [pts[0]]
+                  for q in pts[1:]:
+                      if q != dd[-1]: dd.append(q)
+                  if len(dd) < 2: continue
+                  rec = bytearray([HI[hw], flags]); uv(wid, rec)
+                  for s in (pr.get("name"), pr.get("ref"), pr.get("maxspeed"), mt, pr.get("maxspeed:forward"), pr.get("maxspeed:backward")): st(s, rec)
+                  uv(len(dd), rec); uv(dd[0][0] + 9000000, rec); uv(dd[0][1] + 18000000, rec)
+                  for i in range(1, len(dd)):
+                      uv(zz(dd[i][0] - dd[i - 1][0]), rec); uv(zz(dd[i][1] - dd[i - 1][1]), rec)
+                  keys = set()
+                  for i in range(len(c) - 1):
+                      a = c[i]; b = c[i + 1]
+                      dy = (b[1] - a[1]) * 111320.0; dx = (b[0] - a[0]) * 111320.0 * math.cos(math.radians(a[1]))
+                      steps = int(math.hypot(dx, dy) / 100.0) + 1
+                      for k in range(steps + 1):
+                          t = k / steps
+                          keys.add(tile(a[1] + (b[1] - a[1]) * t, a[0] + (b[0] - a[0]) * t))
+                  enc = base64.b64encode(bytes(rec)).decode()
+                  for k in keys: o.write("%09d\t%s\n" % (k, enc))
+                  n += 1
+          print("roads", n)
+          PY
+          rm -f data/roads.geojsonseq
+          LC_ALL=C sort -S 3G -T data data/limits.unsorted > data/limits.sorted
+          rm -f data/limits.unsorted
+          python3 - <<'PY'
+          import base64, zlib, struct
+          def uv(n, out):
+              while True:
+                  b = n & 0x7f; n >>= 7
+                  if n: out.append(b | 0x80)
+                  else: out.append(b); return
+          idx = []; state = {"off": 0, "cur": None, "recs": []}
+          def flush(o):
+              if state["cur"] is None: return
+              blob = bytearray(); uv(len(state["recs"]), blob)
+              for r in state["recs"]: blob.extend(r)
+              z = zlib.compress(bytes(blob), 9)
+              o.write(z); idx.append((state["cur"], state["off"], len(z))); state["off"] += len(z)
+          with open("data/limits.sorted") as f, open("data/limits.blobs", "wb") as o:
+              for line in f:
+                  k, _, e = line.rstrip("\n").partition("\t")
+                  k = int(k)
+                  if k != state["cur"]:
+                      flush(o); state["cur"] = k; state["recs"] = []
+                  state["recs"].append(base64.b64decode(e))
+              flush(o)
+          with open("data/limits.bin", "wb") as o:
+              o.write(b"HNL1"); o.write(struct.pack(">II", 14, len(idx)))
+              for k, of, ln in idx: o.write(struct.pack(">III", k, of, ln))
+              with open("data/limits.blobs", "rb") as b:
+                  while True:
+                      ch = b.read(1 << 20)
+                      if not ch: break
+                      o.write(ch)
+          print("tiles", len(idx))
+          PY
+          rm -f data/limits.sorted data/limits.blobs
+          ls -l data/cameras.tsv data/limits.bin
+
       # ---------------- publish ----------------
       - name: Publish to the release
         env:
@@ -731,17 +1189,18 @@ jobs:
         run: |
           rm -f data/region.osm.pbf data/tz.sqlite
           # GitHub refuses release files of 2 GB or more, so a bigger file is cut into parts (the app joins them again)
-          for big in tiles.tar map.pmtiles addresses.tsv places.tsv; do
+          for big in tiles.tar map.pmtiles addresses.tsv places.tsv names.idx; do
             if [ -f "data/$big" ] && [ "$(stat -c%s data/$big)" -gt 1900000000 ]; then
               split -b 1800M -d -a 2 "data/$big" "data/$big.part" && rm "data/$big"
             fi
           done
           FILES=""
-          for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv; do
+          for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/names.idx data/names.idx.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv data/cameras.tsv data/limits.bin; do
             # GitHub won't take an empty file (an area with no traffic lights mapped, say): the app copes without it
             [ -s "$f" ] && FILES="$FILES $f"
           done
           [ -n "$FILES" ] || { echo "Nothing to publish"; exit 1; }
+          # (in "extras only" mode just the speed limit and camera files are here: the rest of the release is left as it is)
           ls -l $FILES
           gh release upload "${{ matrix.area.tag }}" $FILES --repo "${{ github.repository }}" --clobber
           echo "Download address: https://github.com/${{ github.repository }}/releases/download/${{ matrix.area.tag }}"
@@ -755,7 +1214,7 @@ jobs:
       fail-fast: false
       matrix:
         area: ${{ fromJson(needs.plan.outputs.a4) }}
-        part: [routing, map, lists]
+        part: ${{ fromJson(needs.plan.outputs.parts) }}
     name: ${{ matrix.area.tag }} ${{ matrix.part }}
     steps:
       - name: Free up disk space
@@ -775,6 +1234,7 @@ jobs:
           # lots of jobs start together, so spread their downloads out a little, and keep trying if the server is busy;
           # if Geofabrik won't give it, the same extract is fetched from the openstreetmap.fr mirror instead
           sleep $(( RANDOM % 90 ))
+          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
           P="${{ matrix.area.path }}"
           ok=""
           for U in "https://download.geofabrik.de/$P-latest.osm.pbf" "https://download.openstreetmap.fr/extracts/$P.osm.pbf"; do
@@ -789,7 +1249,6 @@ jobs:
           done
           [ -n "$ok" ] || { echo "Couldn't download $P from Geofabrik or the mirror - check the path on download.geofabrik.de"; exit 1; }
           ls -l data
-          sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
 
       # ---------------- routing ----------------
       - name: Build the routing tiles with Valhalla
@@ -878,6 +1337,24 @@ jobs:
           PY
           rm -f data/named.geojsonseq
           ls -l data/places.tsv
+          # a word index for the search list: every word of every name with where its line starts in places.tsv, sorted, so the
+          # app can find names by their first letters without reading the whole list
+          python3 - <<'PY'
+          import re
+          wre = re.compile(r"[^\w]+")
+          n = 0
+          with open("data/places.tsv", "rb") as f, open("data/names.unsorted", "w", encoding="utf-8") as o:
+              off = 0
+              for raw in f:
+                  name = raw.decode("utf-8", "replace").split("\t", 1)[0].lower()
+                  for w in set(x for x in wre.split(name) if len(x) >= 2):
+                      o.write("%s\t%d\n" % (w, off)); n += 1
+                  off += len(raw)
+          print("index entries:", n)
+          PY
+          LC_ALL=C sort -S 3G -T data data/names.unsorted > data/names.idx
+          rm -f data/names.unsorted
+          ls -l data/names.idx
       - name: Build house number and postcode lists
         if: matrix.part == 'lists'
         run: |
@@ -953,6 +1430,135 @@ jobs:
           done
           ls -l data/lamps.tsv data/signals.tsv
 
+      # ---------------- speed limits and speed cameras (full builds and "extras only") ----------------
+      - name: Build speed limit and speed camera lists
+        if: matrix.part == 'lists' || matrix.part == 'extras'
+        run: |
+          # speed cameras: the same tile-sorted list as the traffic lights
+          osmium tags-filter data/region.osm.pbf "n/highway=speed_camera" -o data/cams.osm.pbf --overwrite
+          osmium export data/cams.osm.pbf -f geojsonseq --geometry-types=point -o data/cams.geojsonseq --overwrite
+          python3 - <<'PY'
+          import json, math
+          n = 0
+          with open("data/cams.geojsonseq", encoding="utf-8") as f, open("data/cameras.unsorted", "w") as o:
+              for line in f:
+                  line = line.lstrip("\x1e").strip()
+                  if not line: continue
+                  try: lon, lat = json.loads(line)["geometry"]["coordinates"]
+                  except Exception: continue
+                  x = min(32767, max(0, int((lon + 180.0) / 360.0 * 32768)))
+                  r = math.radians(lat)
+                  y = min(32767, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * 32768)))
+                  o.write("%05d%05d\t%.6f\t%.6f\n" % (y, x, lat, lon)); n += 1
+          print("cameras", n)
+          PY
+          LC_ALL=C sort -S 1G -T data data/cameras.unsorted > data/cameras.tsv
+          rm -f data/cameras.unsorted data/cams.osm.pbf data/cams.geojsonseq
+          # every road a car can use, with its speed limit tags and shape, grouped by zoom-14 tile (see OfflineLimits.kt in the app)
+          osmium tags-filter data/region.osm.pbf w/highway=motorway,motorway_link,trunk,trunk_link,primary,primary_link,secondary,secondary_link,tertiary,tertiary_link,unclassified,residential,living_street,service,road -o data/roads.osm.pbf --overwrite
+          osmium export data/roads.osm.pbf -f geojsonseq --geometry-types=linestring --add-unique-id=type_id -o data/roads.geojsonseq --overwrite
+          rm -f data/roads.osm.pbf
+          python3 - <<'PY'
+          import json, math, base64
+          HW = ["motorway","motorway_link","trunk","trunk_link","primary","primary_link","secondary","secondary_link","tertiary","tertiary_link","unclassified","residential","living_street","service","road"]
+          HI = {h: i for i, h in enumerate(HW)}
+          Z = 16384
+          def tile(lat, lon):
+              x = min(Z - 1, max(0, int((lon + 180.0) / 360.0 * Z)))
+              r = math.radians(max(-85.0, min(85.0, lat)))
+              y = min(Z - 1, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * Z)))
+              return y * Z + x
+          def uv(n, out):
+              while True:
+                  b = n & 0x7f; n >>= 7
+                  if n: out.append(b | 0x80)
+                  else: out.append(b); return
+          def zz(n): return (n << 1) ^ (n >> 63)
+          def st(s, out):
+              b = str(s or "").replace("\t", " ").encode("utf-8")[:255]
+              uv(len(b), out); out.extend(b)
+          n = 0
+          with open("data/roads.geojsonseq", encoding="utf-8") as f, open("data/limits.unsorted", "w") as o:
+              for line in f:
+                  line = line.lstrip("\x1e").strip()
+                  if not line: continue
+                  try: ft = json.loads(line)
+                  except Exception: continue
+                  g = ft.get("geometry") or {}
+                  if g.get("type") != "LineString": continue
+                  pr = ft.get("properties") or {}
+                  hw = pr.get("highway")
+                  if hw not in HI: continue
+                  # driveways and car park aisles are left out (they only get in the way of matching the road you're on)
+                  if hw == "service" and pr.get("service") and not pr.get("maxspeed"): continue
+                  c = g.get("coordinates") or []
+                  if len(c) < 2: continue
+                  fid = str(ft.get("id", "w0"))
+                  wid = int(fid[1:]) if fid[1:].isdigit() else 0
+                  ow = str(pr.get("oneway", "")).lower(); jn = str(pr.get("junction", "")).lower()
+                  flags = (1 if ow in ("yes", "true", "1") else 0) | (2 if ow == "-1" else 0) | (4 if jn in ("roundabout", "circular") else 0)
+                  mt = pr.get("maxspeed:type") or pr.get("source:maxspeed") or pr.get("zone:maxspeed") or ""
+                  pts = [(int(round(p[1] * 1e5)), int(round(p[0] * 1e5))) for p in c]
+                  dd = [pts[0]]
+                  for q in pts[1:]:
+                      if q != dd[-1]: dd.append(q)
+                  if len(dd) < 2: continue
+                  rec = bytearray([HI[hw], flags]); uv(wid, rec)
+                  for s in (pr.get("name"), pr.get("ref"), pr.get("maxspeed"), mt, pr.get("maxspeed:forward"), pr.get("maxspeed:backward")): st(s, rec)
+                  uv(len(dd), rec); uv(dd[0][0] + 9000000, rec); uv(dd[0][1] + 18000000, rec)
+                  for i in range(1, len(dd)):
+                      uv(zz(dd[i][0] - dd[i - 1][0]), rec); uv(zz(dd[i][1] - dd[i - 1][1]), rec)
+                  keys = set()
+                  for i in range(len(c) - 1):
+                      a = c[i]; b = c[i + 1]
+                      dy = (b[1] - a[1]) * 111320.0; dx = (b[0] - a[0]) * 111320.0 * math.cos(math.radians(a[1]))
+                      steps = int(math.hypot(dx, dy) / 100.0) + 1
+                      for k in range(steps + 1):
+                          t = k / steps
+                          keys.add(tile(a[1] + (b[1] - a[1]) * t, a[0] + (b[0] - a[0]) * t))
+                  enc = base64.b64encode(bytes(rec)).decode()
+                  for k in keys: o.write("%09d\t%s\n" % (k, enc))
+                  n += 1
+          print("roads", n)
+          PY
+          rm -f data/roads.geojsonseq
+          LC_ALL=C sort -S 3G -T data data/limits.unsorted > data/limits.sorted
+          rm -f data/limits.unsorted
+          python3 - <<'PY'
+          import base64, zlib, struct
+          def uv(n, out):
+              while True:
+                  b = n & 0x7f; n >>= 7
+                  if n: out.append(b | 0x80)
+                  else: out.append(b); return
+          idx = []; state = {"off": 0, "cur": None, "recs": []}
+          def flush(o):
+              if state["cur"] is None: return
+              blob = bytearray(); uv(len(state["recs"]), blob)
+              for r in state["recs"]: blob.extend(r)
+              z = zlib.compress(bytes(blob), 9)
+              o.write(z); idx.append((state["cur"], state["off"], len(z))); state["off"] += len(z)
+          with open("data/limits.sorted") as f, open("data/limits.blobs", "wb") as o:
+              for line in f:
+                  k, _, e = line.rstrip("\n").partition("\t")
+                  k = int(k)
+                  if k != state["cur"]:
+                      flush(o); state["cur"] = k; state["recs"] = []
+                  state["recs"].append(base64.b64decode(e))
+              flush(o)
+          with open("data/limits.bin", "wb") as o:
+              o.write(b"HNL1"); o.write(struct.pack(">II", 14, len(idx)))
+              for k, of, ln in idx: o.write(struct.pack(">III", k, of, ln))
+              with open("data/limits.blobs", "rb") as b:
+                  while True:
+                      ch = b.read(1 << 20)
+                      if not ch: break
+                      o.write(ch)
+          print("tiles", len(idx))
+          PY
+          rm -f data/limits.sorted data/limits.blobs
+          ls -l data/cameras.tsv data/limits.bin
+
       # ---------------- publish ----------------
       - name: Publish to the release
         env:
@@ -960,17 +1566,18 @@ jobs:
         run: |
           rm -f data/region.osm.pbf data/tz.sqlite
           # GitHub refuses release files of 2 GB or more, so a bigger file is cut into parts (the app joins them again)
-          for big in tiles.tar map.pmtiles addresses.tsv places.tsv; do
+          for big in tiles.tar map.pmtiles addresses.tsv places.tsv names.idx; do
             if [ -f "data/$big" ] && [ "$(stat -c%s data/$big)" -gt 1900000000 ]; then
               split -b 1800M -d -a 2 "data/$big" "data/$big.part" && rm "data/$big"
             fi
           done
           FILES=""
-          for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv; do
+          for f in data/tiles.tar data/tiles.tar.part* data/admins.sqlite data/valhalla.json data/places.tsv data/places.tsv.part* data/names.idx data/names.idx.part* data/map.pmtiles data/map.pmtiles.part* data/fonts.zip data/addresses.tsv data/addresses.tsv.part* data/postcodes.tsv data/lamps.tsv data/signals.tsv data/cameras.tsv data/limits.bin; do
             # GitHub won't take an empty file (an area with no traffic lights mapped, say): the app copes without it
             [ -s "$f" ] && FILES="$FILES $f"
           done
           [ -n "$FILES" ] || { echo "Nothing to publish"; exit 1; }
+          # (in "extras only" mode just the speed limit and camera files are here: the rest of the release is left as it is)
           ls -l $FILES
           gh release upload "${{ matrix.area.tag }}" $FILES --repo "${{ github.repository }}" --clobber
           echo "Download address: https://github.com/${{ github.repository }}/releases/download/${{ matrix.area.tag }}"
