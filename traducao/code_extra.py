@@ -188,3 +188,48 @@ for _rel in ['ui/RouteUi.kt', 'ui/SettingsScreen.kt', 'ui/OfflineMapsPage.kt', '
 # country names in Portuguese on the search setting
 PATCHES['ui/SettingsScreen.kt'].append(('''java.util.Locale("", cc).getDisplayCountry(java.util.Locale.UK)''',
                                          '''java.util.Locale("", cc).getDisplayCountry(java.util.Locale("pt", "BR"))'''))
+
+# Settings rows on a narrow (portrait phone) screen: when the controls on the right leave too little room for the title,
+# they go under the title instead of squeezing it into a one-letter-wide column.
+PATCHES.setdefault('ui/SettingsKit.kt', []).append((
+'''    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).then(hlMod).then(if (onClick != null) Modifier.clip(RoundedCornerShape(14.dp)).clickable(onClick = onClick) else Modifier).padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f).padding(end = 14.dp)) {
+            Text(title, color = c.text, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            if (!sub.isNullOrBlank()) Text(sub, color = c.sub, fontSize = 12.sp, modifier = Modifier.padding(top = 2.dp))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) { trailing() }
+    }''',
+'''    androidx.compose.ui.layout.Layout(
+        content = {
+            Column(Modifier.padding(end = 14.dp)) {
+                Text(title, color = c.text, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                if (!sub.isNullOrBlank()) Text(sub, color = c.sub, fontSize = 12.sp, modifier = Modifier.padding(top = 2.dp))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) { trailing() }
+        },
+        modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).then(hlMod).then(if (onClick != null) Modifier.clip(RoundedCornerShape(14.dp)).clickable(onClick = onClick) else Modifier).padding(vertical = 8.dp),
+    ) { measurables, constraints ->
+        val w = constraints.maxWidth
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val tr = measurables[1].measure(loose)
+        // side by side while the title keeps at least ~180 dp, otherwise the controls go underneath
+        if (tr.width == 0 || w - tr.width >= 180.dp.roundToPx()) {
+            val tx = measurables[0].measure(loose.copy(maxWidth = (w - tr.width).coerceAtLeast(0)))
+            val h = maxOf(tx.height, tr.height, constraints.minHeight)
+            layout(w, h) {
+                tx.placeRelative(0, (h - tx.height) / 2)
+                tr.placeRelative(w - tr.width, (h - tr.height) / 2)
+            }
+        } else {
+            val tx = measurables[0].measure(loose)
+            val gap = 8.dp.roundToPx()
+            val h = maxOf(tx.height + gap + tr.height, constraints.minHeight)
+            layout(w, h) {
+                tx.placeRelative(0, 0)
+                tr.placeRelative(0, tx.height + gap)
+            }
+        }
+    }'''))
