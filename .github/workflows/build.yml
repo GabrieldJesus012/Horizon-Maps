@@ -1,13 +1,14 @@
-name: Build Horizon Nav
+name: Build Horizon Nav BR
+# Builds the app from HorizonNav.zip on every push to main (and from the Actions tab), signs it with our own key and
+# puts the APK on this repo's "app" release, so the download link below always gives the newest version and the app's own
+# update check finds it:
+#   https://github.com/<you>/<repo>/releases/download/app/HorizonNav-BR.apk
+# Needs one repo secret: KEYSTORE_PASSWORD (Settings > Secrets and variables > Actions), the password of horizon-br.keystore.
 on:
   push:
     branches: [main]
+    paths: ["HorizonNav.zip", ".github/workflows/build.yml", "horizon-br.keystore"]
   workflow_dispatch:
-    inputs:
-      publish:
-        description: "Also publish the app to the download link (so the app's update check finds it)"
-        type: boolean
-        default: false
 permissions:
   contents: write
 jobs:
@@ -15,6 +16,17 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+      - name: Check the signing key is set up
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          if [ ! -f horizon-br.keystore ]; then echo "::error::horizon-br.keystore is missing from the repo"; exit 1; fi
+          if [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::error::Add the repo secret KEYSTORE_PASSWORD (Settings > Secrets and variables > Actions > New repository secret), then run this again"
+            exit 1
+          fi
+          keytool -list -storetype PKCS12 -keystore horizon-br.keystore -storepass "$KEYSTORE_PASSWORD" > /dev/null \
+            || { echo "::error::KEYSTORE_PASSWORD doesn't open horizon-br.keystore: check the secret"; exit 1; }
       - name: Unpack the uploaded zip
         run: |
           ZIP=$(ls *.zip | head -1)
@@ -27,19 +39,6 @@ jobs:
         with: { distribution: temurin, java-version: 17 }
       - name: Accept the Android licences
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
-      - name: Use the same signing key every time (so updates install over the old version)
-        run: |
-          if [ ! -f signing.keystore ]; then
-            keytool -genkeypair -keystore signing.keystore -storepass android -keypass android -alias androiddebugkey \
-              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-            git config user.name "github-actions"
-            git config user.email "github-actions@users.noreply.github.com"
-            git add signing.keystore
-            git commit -m "Add signing key"
-            git push
-          fi
-          mkdir -p ~/.android
-          cp signing.keystore ~/.android/debug.keystore
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: 8.14.4 }
       - name: Build release APK
@@ -47,24 +46,28 @@ jobs:
         # the Mapbox download token comes from the repo's secret (only used if Mapbox asks for it)
         env:
           MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: gradle :app:assembleRelease -PtomtomApiKey="${{ secrets.TOMTOM_API_KEY }}"
+      - name: Check the APK is signed with our key
+        run: |
+          APK="${{ env.PROJECT }}/app/build/outputs/apk/release/HorizonNav-BR.apk"
+          [ -f "$APK" ] || { echo "::error::No APK was built"; exit 1; }
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)
+          SIGNER=$("$BT/apksigner" verify --print-certs "$APK" 2>/dev/null | grep -m1 "certificate DN" || true)
+          echo "$SIGNER"
+          echo "$SIGNER" | grep -q "Horizon Nav BR" || { echo "::error::The APK isn't signed with horizon-br.keystore"; exit 1; }
       - uses: actions/upload-artifact@v4
         with:
-          name: HorizonNav-public-apk
+          name: HorizonNav-BR-apk
           path: ${{ env.PROJECT }}/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
-      # Only when you tick "publish" on Run workflow: the APK goes to the release called "app", replacing the one there,
-      # so this link always gives the newest version:
-      #   https://github.com/<you>/<repo>/releases/download/app/HorizonNav-public.apk
-      - name: Publish the app
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+      - name: Publish the app to the download link
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          APK="${{ env.PROJECT }}/app/build/outputs/apk/release/HorizonNav-public.apk"
-          [ -f "$APK" ] || { echo "No APK was built"; exit 1; }
-          NOTES="Horizon Nav 1.0.${{ github.run_number }}, built $(date -u '+%-d %b %Y'). Download HorizonNav-public.apk below and install it over the old one."
-          gh release create app --repo "${{ github.repository }}" --title "Horizon Nav" --notes "$NOTES" --latest=false 2>/dev/null \
-            || gh release edit app --repo "${{ github.repository }}" --title "Horizon Nav (1.0.${{ github.run_number }})" --notes "$NOTES"
+          APK="${{ env.PROJECT }}/app/build/outputs/apk/release/HorizonNav-BR.apk"
+          NOTES="Horizon Nav BR 1.0.${{ github.run_number }}, gerado em $(date -u '+%d/%m/%Y'). Baixe o HorizonNav-BR.apk abaixo e instale por cima do anterior."
+          gh release create app --repo "${{ github.repository }}" --title "Horizon Nav BR" --notes "$NOTES" --latest=false 2>/dev/null \
+            || gh release edit app --repo "${{ github.repository }}" --title "Horizon Nav BR (1.0.${{ github.run_number }})" --notes "$NOTES"
           gh release upload app "$APK" --repo "${{ github.repository }}" --clobber
-          echo "Download link: https://github.com/${{ github.repository }}/releases/download/app/HorizonNav-public.apk"
+          echo "Download link: https://github.com/${{ github.repository }}/releases/download/app/HorizonNav-BR.apk"
