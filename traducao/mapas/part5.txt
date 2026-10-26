@@ -1,0 +1,119 @@
+@@ ui/SettingsScreen.kt
+Screen ⇒ Tela
+Brightness ⇒ Brilho
+100% leaves it to the system ⇒ 100% deixa por conta do sistema
+Dim the screen at night ⇒ Escurecer a tela à noite
+Keep the screen on ⇒ Manter a tela ligada
+Text and button size ⇒ Tamanho de textos e botões
+Units ⇒ Unidades
+Distance and speed ⇒ Distância e velocidade
+Miles ⇒ Milhas
+Kilometres ⇒ Quilômetros
+Temperature ⇒ Temperatura
+Driving side ⇒ Lado do motorista
+Automatic ⇒ Automático
+Right-hand drive ⇒ Volante à direita
+Left-hand drive ⇒ Volante à esquerda
+Driver on the right (UK): cards on the left, buttons on the right ⇒ Motorista à direita (Reino Unido): cartões à esquerda, botões à direita
+Driver on the left (US, Europe): the screen is mirrored, cards on the right ⇒ Motorista à esquerda (Brasil, EUA, Europa): a tela é espelhada, cartões à direita
+Follows the country you're in ⇒ Segue o país onde você está
+: left-hand drive, screen mirrored ⇒ : volante à esquerda, tela espelhada
+: right-hand drive ⇒ : volante à direita
+Smoothness ⇒ Fluidez
+Lower these if the map feels slow or the head unit gets warm. Sharpness and fast drawing apply after restarting the app. ⇒ Diminua estes se o mapa parecer lento ou a central esquentar. Nitidez e desenho rápido valem depois de reiniciar o app.
+Map sharpness ⇒ Nitidez do mapa
+Full ⇒ Máxima
+Balanced ⇒ Equilibrada
+Light ⇒ Leve
+Lowest ⇒ Mínima
+Frame rate ⇒ Taxa de quadros
+Auto ⇒ Automático
+Starts at 30 and steps down when the head unit can't keep up, so the map moves evenly ⇒ Começa em 30 e diminui quando a central não acompanha, para o mapa se mover de forma uniforme
+Lower is lighter on the head unit ⇒ Menor é mais leve para a central
+Fast map drawing ⇒ Desenho rápido do mapa
+Performance meter ⇒ Medidor de desempenho
+A line at the top of the map: frames drawn, camera moves and pauses. Handy for finding what slows the map ⇒ Uma linha no topo do mapa: quadros desenhados, movimentos de câmera e pausas. Útil para descobrir o que deixa o mapa lento
+Search ⇒ Busca
+Search results ⇒ Resultados da busca
+Search with ⇒ Buscar com
+TomTom's search is the one Horizon Nav uses: best for UK addresses and house numbers ⇒ A busca da TomTom é a padrão do Horizon Nav: a melhor para endereços e números de casas
+For the most accurate address search, add a free TomTom key below. ⇒ Para a busca de endereços mais precisa, adicione uma chave gratuita da TomTom abaixo.
+Map accounts ⇒ Contas de mapa
+Search also finds places you saved or went to before. With no signal, routes, the map and search come from the offline pack. ⇒ A busca também encontra locais que você salvou ou visitou. Sem sinal, as rotas, o mapa e a busca vêm do pacote offline.
+TomTom API key ⇒ Chave de API da TomTom
+Using the key built into this app unless you paste another ⇒ Usando a chave embutida no app, a menos que você cole outra
+Optional: gives the most accurate address search, and a backup for routes and traffic. Free from developer.tomtom.com ⇒ Opcional: dá a busca de endereços mais precisa e uma reserva para rotas e trânsito. Grátis em developer.tomtom.com
+Paste a key ⇒ Cole uma chave
+Mapbox access token ⇒ Token de acesso da Mapbox
+For the Mapbox map, routes with live traffic and speed limits, search and satellite imagery. Free from account.mapbox.com (the default public token, starting pk., is fine) ⇒ Para o mapa da Mapbox, rotas com trânsito ao vivo e limites de velocidade, busca e imagens de satélite. Grátis em account.mapbox.com (o token público padrão, que começa com pk., serve)
+Paste a token ⇒ Cole um token
+Routes, search and traffic ⇒ Rotas, busca e trânsito
+Auto uses Mapbox while the Mapbox map is showing, and TomTom otherwise. If the one in use stops working (its daily limit, a refused key, an outage), the other takes over by itself for a while. ⇒ Automático usa a Mapbox enquanto o mapa da Mapbox estiver na tela, e a TomTom nos outros casos. Se o serviço em uso parar (limite diário, chave recusada, instabilidade), o outro assume sozinho por um tempo.
+Use ⇒ Usar
+Version ⇒ Versão
+Check for updates ⇒ Procurar atualizações
+Update to ${u.version} ⇒ Atualizar para ${u.version}
+Updating… ⇒ Atualizando…
+Check now ⇒ Verificar agora
+Look for updates by itself ⇒ Procurar atualizações sozinho
+About twice a day, when there's a connection ⇒ Umas duas vezes por dia, quando houver conexão
+Setup ⇒ Configuração inicial
+Go through the first-run steps again: map key, home and work, offline maps, permissions ⇒ Refazer os passos iniciais: chave do mapa, casa e trabalho, mapas offline, permissões
+Run setup ⇒ Refazer configuração
+Feedback or a problem ⇒ Sugestão ou problema
+Sends a report with the app version, your unit and the last crash, so it's quick to fix ⇒ Envia um relatório com a versão do app, seu aparelho e o último travamento, para facilitar a correção
+Report ⇒ Relatar
+Permissions ⇒ Permissões
+While a route is running, guidance carries on when you switch apps and a notification shows. Allow notifications so it can appear. ⇒ Com uma rota ativa, a navegação continua quando você troca de app e uma notificação aparece. Permita notificações para ela poder aparecer.
+Location ⇒ Localização
+Allowed ⇒ Permitida
+Not allowed: navigation needs it ⇒ Não permitida: a navegação precisa dela
+App permissions ⇒ Permissões do app
+Location services ⇒ Serviços de localização
+Open ⇒ Abrir
+Places from other apps ⇒ Locais de outros apps
+Share a place to Horizon Nav from Google Maps, WhatsApp, Contacts or a web page and it plans the route. To open Google Maps links here straight away, tap Open by default and add the links. ⇒ Compartilhe um local com o Horizon Nav pelo Google Maps, WhatsApp, Contatos ou uma página da web e ele planeja a rota. Para abrir links do Google Maps direto aqui, toque em Abrir por padrão e adicione os links.
+Google Maps links ⇒ Links do Google Maps
+Open by default ⇒ Abrir por padrão
+If Horizon Nav doesn't appear in Android Auto: 1. Open Android Auto's settings, tap the version number at the bottom about 10 times, then in the top-right menu open Developer settings and turn on Unknown sources. 2. Back in Android Auto's settings, open Customise launcher and make sure Horizon Nav is ticked. 3. Force stop Android Auto (App info below), unplug and plug back in. If it still doesn't show, your phone's Android Auto only lists apps installed by the Play Store: install the APK through an installer that sets Play as the source (for example \"adb install -i com.android.vending\", or an app like AAAD or Install with Options). ⇒ Se o Horizon Nav não aparecer no Android Auto: 1. Abra as configurações do Android Auto, toque umas 10 vezes no número da versão lá embaixo, depois no menu do canto superior direito abra Configurações do desenvolvedor e ative Fontes desconhecidas. 2. De volta às configurações do Android Auto, abra Personalizar acesso rápido e confira se o Horizon Nav está marcado. 3. Force a parada do Android Auto (Informações do app abaixo), desconecte e conecte de novo. Se ainda não aparecer, o Android Auto do seu celular só lista apps instalados pela Play Store: instale o APK com um instalador que define a Play como origem (por exemplo \"adb install -i com.android.vending\", ou um app como AAAD ou Install with Options).
+Google Play (Android Auto lists it without any extra steps) ⇒ Google Play (o Android Auto lista sem passos extras)
+Unknown (installed from a file): needs Unknown sources in Android Auto ⇒ Desconhecida (instalado por arquivo): precisa de Fontes desconhecidas no Android Auto
+Horizon Nav's own updater: needs Unknown sources in Android Auto ⇒ Atualizador do próprio Horizon Nav: precisa de Fontes desconhecidas no Android Auto
+$inst: needs Unknown sources in Android Auto ⇒ $inst: precisa de Fontes desconhecidas no Android Auto
+Unknown ⇒ Desconhecida
+Size on the car screen ⇒ Tamanho na tela do carro
+It sizes itself to the car's screen; this makes it bigger or smaller from there ⇒ Ele se ajusta à tela do carro; isto aumenta ou diminui a partir daí
+Installed by ⇒ Instalado por
+Android Auto settings ⇒ Configurações do Android Auto
+Android Auto isn't installed on this phone ⇒ O Android Auto não está instalado neste celular
+Android Auto app info ⇒ Informações do app Android Auto
+To force stop it after changing its settings ⇒ Para forçar a parada depois de mudar as configurações
+App info ⇒ Informações do app
+Backup saved ⇒ Backup salvo
+Could not save the backup ⇒ Não foi possível salvar o backup
+Restored ${prefs.importJson(text)} settings ⇒ ${prefs.importJson(text)} configurações restauradas
+That file is not a valid backup ⇒ Esse arquivo não é um backup válido
+Backup ⇒ Backup
+Includes settings and saved places, not the API key or the offline pack. A backup from Horizon Launcher can be restored here too. ⇒ Inclui configurações e locais salvos, mas não a chave de API nem o pacote offline. Um backup do Horizon Launcher também pode ser restaurado aqui.
+Settings and saved places ⇒ Configurações e locais salvos
+Back up ⇒ Fazer backup
+Restore ⇒ Restaurar
+Problem report ⇒ Relatório de problema
+The app closed unexpectedly last time. Send a photo of this so it can be fixed. ⇒ O app fechou inesperadamente da última vez. Envie uma foto disto para que possa ser corrigido.
+Clear the report ⇒ Apagar o relatório
+${countryName(here)} only ⇒ Só ${countryName(here)}
+My country only ⇒ Só o meu país
+Anywhere ⇒ Qualquer lugar
+What happened, or what would you like? Where you were and what you tapped helps. ⇒ O que aconteceu, ou o que você gostaria? Onde você estava e o que tocou ajuda.
+e.g. Rerouted the wrong way near Southampton ⇒ ex.: Recalculou pelo caminho errado perto do centro
+Sent with it: the app version, your head unit, the main settings, your downloaded areas and the last crash (no places or API keys). ⇒ Vai junto: a versão do app, seu aparelho, as principais configurações, as regiões baixadas e o último travamento (sem locais nem chaves de API).
+Close ⇒ Fechar
+Copy ⇒ Copiar
+Report copied: paste it into a message or a Reddit comment ⇒ Relatório copiado: cole numa mensagem ou num comentário
+Send on GitHub ⇒ Enviar no GitHub
+Report from Horizon Nav ${com.headunit.launcher.BuildConfig.VERSION_NAME} ⇒ Relatório do Horizon Nav ${com.headunit.launcher.BuildConfig.VERSION_NAME}
+No browser on this unit: use Copy instead ⇒ Nenhum navegador neste aparelho: use Copiar
+Faded ⇒ Suave
+Grey ⇒ Cinza
+Colours ⇒ Cores
+Horizon: Mapbox's map in the app's own soft colours. Day colours shown; each has a night version ⇒ Horizon: o mapa da Mapbox com as cores suaves do próprio app. Mostradas as cores de dia; cada uma tem versão noturna

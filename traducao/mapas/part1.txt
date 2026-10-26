@@ -1,0 +1,105 @@
+@@ ui/SetupScreen.kt
+Welcome to Horizon Nav ⇒ Bem-vindo ao Horizon Nav
+A few quick steps and you're ready to drive ⇒ Alguns passos rápidos e você já pode dirigir
+Map keys ⇒ Chaves do mapa
+Mapbox for the map and routes, TomTom for search ⇒ Mapbox para o mapa e as rotas, TomTom para a busca
+Home and work ⇒ Casa e trabalho
+One tap to either from the map ⇒ Um toque no mapa para ir a qualquer um
+Offline pack ⇒ Pacote offline
+Routes and search with no signal ⇒ Rotas e busca sem sinal
+Permissions ⇒ Permissões
+Your position and the guidance notification ⇒ Sua posição e a notificação da navegação
+Skip setup ⇒ Pular configuração
+Back ⇒ Voltar
+Get started ⇒ Começar
+Next ⇒ Próximo
+Start driving ⇒ Começar a dirigir
+Horizon Nav is built for the car: big, clear guidance on Mapbox's 3D map, with live traffic, UK speed limits and cameras, and routes and search that keep working with no signal. ⇒ O Horizon Nav foi feito para o carro: orientações grandes e claras no mapa 3D da Mapbox, com trânsito ao vivo, limites de velocidade, radares e rotas e busca que continuam funcionando sem sinal.
+Live traffic and faster routes as you drive ⇒ Trânsito ao vivo e rotas mais rápidas enquanto você dirige
+Lane guidance, junction signs and speed warnings ⇒ Indicação de faixa, placas de cruzamento e alertas de velocidade
+Offline routes and search for when signal drops ⇒ Rotas e busca offline para quando o sinal cair
+Everything here can be changed later in Settings. ⇒ Tudo aqui pode ser alterado depois em Configurações.
+Horizon Nav uses Mapbox for the map, live traffic, search and routes. It needs your own free Mapbox access token, so the map runs on your Mapbox account (it's free for personal use). ⇒ O Horizon Nav usa a Mapbox para o mapa, o trânsito ao vivo, a busca e as rotas. Ele precisa do seu próprio token de acesso gratuito da Mapbox, então o mapa roda na sua conta Mapbox (é grátis para uso pessoal).
+1. Go to account.mapbox.com and sign up or log in\n2. Open Tokens and copy your Default public token (it starts pk.)\n3. Paste it here ⇒ 1. Acesse account.mapbox.com e crie uma conta ou entre\n2. Abra Tokens e copie o seu Default public token (começa com pk.)\n3. Cole aqui
+Mapbox access token (pk.…) ⇒ Token de acesso da Mapbox (pk.…)
+Without a token the map stays blank; routes can still come from the offline pack. ⇒ Sem token o mapa fica em branco; as rotas ainda podem vir do pacote offline.
+That's a secret token: use the public one (pk.) here. ⇒ Esse é um token secreto: use o público (pk.) aqui.
+That doesn't look like a whole token yet: it's a long code starting pk. ⇒ Isso ainda não parece um token completo: é um código longo que começa com pk.
+Token added: the map shows as soon as you finish setup ⇒ Token adicionado: o mapa aparece assim que você terminar a configuração
+TomTom key ⇒ Chave da TomTom
+Address search uses TomTom, as Horizon Nav always has: it finds house numbers, postcodes and businesses most accurately. TomTom is also the backup for routes and traffic. The key is free. ⇒ A busca de endereços usa a TomTom: ela encontra números de casas, CEPs e estabelecimentos com mais precisão. A TomTom também é a reserva para rotas e trânsito. A chave é gratuita.
+1. Go to developer.tomtom.com and sign up or log in\n2. Open your Dashboard (Keys) and copy your API key\n3. Paste it here ⇒ 1. Acesse developer.tomtom.com e crie uma conta ou entre\n2. Abra o seu Dashboard (Keys) e copie a sua chave de API\n3. Cole aqui
+TomTom API key ⇒ Chave de API da TomTom
+Without it, search uses Mapbox and OpenStreetMap instead, which miss more house numbers. You can add it later in Settings › Search & keys. ⇒ Sem ela, a busca usa Mapbox e OpenStreetMap, que encontram menos números de casas. Você pode adicioná-la depois em Configurações › Busca e chaves.
+TomTom key added: search uses TomTom ⇒ Chave da TomTom adicionada: a busca usa a TomTom
+Search in ⇒ Buscar em
+Home ⇒ Casa
+Work ⇒ Trabalho
+Not set · tap to search ⇒ Não definido · toque para buscar
+Search for your ${label.lowercase()} address or postcode ⇒ Busque o endereço ou CEP de ${label.lowercase()}
+Download the pack once on Wi-Fi and routes, search, speed limits and cameras keep working with no signal. It's a large download (a few GB), so it's best done at home. ⇒ Baixe o pacote uma vez no Wi-Fi e as rotas, a busca, os limites de velocidade e os radares continuam funcionando sem sinal. É um download grande (alguns GB), então é melhor fazer em casa.
+Change area ⇒ Mudar região
+Offline pack installed ⇒ Pacote offline instalado
+Downloading… ⇒ Baixando…
+Download now ⇒ Baixar agora
+You're not on Wi-Fi ⇒ Você não está no Wi-Fi
+ · it carries on if you continue ⇒  · continua se você seguir em frente
+You can do this later in Settings › Offline maps. ⇒ Você pode fazer isso depois em Configurações › Mapas offline.
+Allowed ⇒ Permitido
+Allow ⇒ Permitir
+Location ⇒ Localização
+Needed to show where you are and guide you ⇒ Necessária para mostrar onde você está e guiar você
+Notifications ⇒ Notificações
+So guidance keeps going when you switch apps ⇒ Para a navegação continuar quando você trocar de app
+If the Allow button does nothing, the permission was turned down before: allow it in Settings › About & backup › App permissions. ⇒ Se o botão Permitir não fizer nada, a permissão foi negada antes: libere em Configurações › Sobre e backup › Permissões do app.
+
+@@ ui/Components.kt
+No voice recognition app found on this device ⇒ Nenhum app de reconhecimento de voz encontrado neste aparelho
+
+@@ ui/Shared.kt
+my destination ⇒ meu destino
+I'm on my way to $d ⇒ Estou a caminho de $d
+, arriving about ${e.arrive} ⇒ , chegando por volta de ${e.arrive}
+. Where I am now: https://maps.google.com/?q=${p.lat},${p.lon} ⇒ . Onde estou agora: https://maps.google.com/?q=${p.lat},${p.lon}
+ETA sent to ${prefs.s("etaname", num)} ⇒ Previsão de chegada enviada para ${prefs.s("etaname", num)}
+No messaging app available ⇒ Nenhum app de mensagens disponível
+Contact saved. Tap share again to send. ⇒ Contato salvo. Toque em compartilhar de novo para enviar.
+Choose who to send your ETA to ⇒ Escolha para quem enviar sua previsão de chegada
+
+@@ ui/SettingsKit.kt
+Reset ⇒ Redefinir
+
+@@ ui/PackPicker.kt
+Choose an area ⇒ Escolha uma região
+Search, e.g. France, Texas ⇒ Buscar, ex.: Brasil, Portugal
+No area matches. Try the country's name in English. ⇒ Nenhuma região encontrada. Tente outro nome.
+Close ⇒ Fechar
+
+@@ ui/CarConnected.kt
+Navigating on your car screen ⇒ Navegando na tela do carro
+Horizon Nav is on your car screen ⇒ O Horizon Nav está na tela do carro
+Your destination ⇒ Seu destino
++${e.delayMin} min traffic ⇒ +${e.delayMin} min de trânsito
+time left ⇒ restante
+to go ⇒ a percorrer
+End route ⇒ Encerrar rota
+Pick where to go on the car screen, or share a place to Horizon Nav from any app and it appears there. ⇒ Escolha o destino na tela do carro, ou compartilhe um local com o Horizon Nav de qualquer app e ele aparece lá.
+Show the map here ⇒ Mostrar o mapa aqui
+Settings ⇒ Configurações
+
+@@ ui/Alerts.kt
+SPEED CAMERA ⇒ RADAR
+SPEED LIMIT ⇒ LIMITE DE VELOCIDADE
+HAZARD AHEAD ⇒ PERIGO À FRENTE
+WEATHER ⇒ CLIMA
+TAKE A BREAK ⇒ FAÇA UMA PAUSA
+AVERAGE SPEED CHECK ⇒ CONTROLE DE VELOCIDADE MÉDIA
+SPEED BUMP ⇒ LOMBADA
+LEVEL CROSSING ⇒ PASSAGEM DE NÍVEL
+FORD ⇒ TRAVESSIA DE RIO
+SCHOOL ⇒ ESCOLA
+CLEAN AIR ZONE ⇒ ZONA DE AR LIMPO
+REPORTED AHEAD ⇒ ALERTA À FRENTE
+WRONG WAY ⇒ CONTRAMÃO
+PLANNED TRIP ⇒ VIAGEM PLANEJADA
+ALERT ⇒ ALERTA

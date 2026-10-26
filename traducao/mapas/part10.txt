@@ -1,0 +1,54 @@
+@@ Mapbox.kt
+petrol station ⇒ posto de combustível
+ev charging station ⇒ eletroposto
+car park ⇒ estacionamento
+restaurant ⇒ restaurante
+cafe ⇒ café
+public toilet ⇒ banheiro público
+motorway services ⇒ posto de serviço na rodovia
+
+@@ MainActivity.kt
+your destination ⇒ seu destino
+Navigating to $to ⇒ Navegando para $to
+Couldn't read a place from that ⇒ Não foi possível entender um local a partir disso
+This head unit can't draw the Mapbox map ⇒ Este aparelho não consegue desenhar o mapa da Mapbox
+Horizon Nav needs OpenGL ES 3.0 graphics, and this unit has version ${gl shr 16}.${gl and 0xFFFF}.  ⇒ O Horizon Nav precisa de gráficos OpenGL ES 3.0, e este aparelho tem a versão ${gl shr 16}.${gl and 0xFFFF}. 
+Versions of Horizon Nav from before the Mapbox map work on older graphics, if you still have one. ⇒ Versões do Horizon Nav anteriores ao mapa da Mapbox funcionam com gráficos mais antigos, se você ainda tiver uma.
+Horizon Nav keeps closing while it starts ⇒ O Horizon Nav continua fechando ao iniciar
+Sorry about that. Sending the report below lets it be fixed for this head unit. Nothing personal is in it. ⇒ Desculpe por isso. Enviar o relatório abaixo ajuda a corrigir para este aparelho. Não há nada pessoal nele.
+No browser on this unit: use Copy instead ⇒ Nenhum navegador neste aparelho: use Copiar
+Send on GitHub ⇒ Enviar no GitHub
+Copied: paste it into a message or a Reddit comment ⇒ Copiado: cole numa mensagem ou num comentário
+Copy ⇒ Copiar
+Try again ⇒ Tentar de novo
+
+@@ Updater.kt
+Downloading… ⇒ Baixando…
+Opening the installer… ⇒ Abrindo o instalador…
+Downloading… ${done * 100 / total}% ⇒ Baixando… ${done * 100 / total}%
+
+@@ NavEngine.kt
+Follow the installer to finish ⇒ Siga o instalador para concluir
+
+@@ ui/RouteUi.kt
+Follow ⇒ Siga
+
+@@ ExternalLinks.kt
+Shared location ⇒ Local compartilhado
+
+@@ OfflinePlaces.kt
+Town / city ⇒ Cidade
+Village / area ⇒ Vilarejo / localidade
+ · offline ⇒  · offline
+GB ⇒ BR
+
+@@ MapboxOffline.kt
+Around home · $km km ⇒ Arredores de casa · $km km
+Already saving ${busy}: wait for it to finish, or stop it ⇒ Já salvando ${busy}: espere terminar ou interrompa
+Starting… ⇒ Iniciando…
+Saving ${(f * 100).toInt()}% · ${"%.0f".format(mb)} MB ⇒ Salvando ${(f * 100).toInt()}% · ${"%.0f".format(mb)} MB
+Saved: $name ⇒ Salvo: $name
+Too big for Mapbox's offline limit: try a smaller distance, or delete a saved area ⇒ Grande demais para o limite offline da Mapbox: tente uma distância menor ou apague uma área salva
+Stopped ⇒ Interrompido
+Couldn't save the map: ${err.message.take(120)} ⇒ Não foi possível salvar o mapa: ${err.message.take(120)}
+Couldn't save the map: ${e.message ?: e.javaClass.simpleName} ⇒ Não foi possível salvar o mapa: ${e.message ?: e.javaClass.simpleName}

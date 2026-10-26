@@ -1,0 +1,326 @@
+@@ ui/SettingsScreen.kt
+Map ⇒ Mapa
+Look, layers and colours ⇒ Visual, camadas e cores
+Navigation ⇒ Navegação
+Routes and what's on screen ⇒ Rotas e o que aparece na tela
+Alerts & sound ⇒ Alertas e som
+Voice, cameras and warnings ⇒ Voz, radares e avisos
+Places & trips ⇒ Locais e viagens
+Home, work, favourites, trip log ⇒ Casa, trabalho, favoritos, histórico de viagens
+Fuel & sharing ⇒ Combustível e compartilhamento
+Fuel prices, cost, share ETA ⇒ Preços de combustível, custo, compartilhar chegada
+Offline maps ⇒ Mapas offline
+Maps and routes with no signal ⇒ Mapas e rotas sem sinal
+Display ⇒ Tela
+Brightness, size, units, speed ⇒ Brilho, tamanho, unidades, velocidade
+Search & keys ⇒ Busca e chaves
+Search area and map accounts ⇒ Área de busca e contas de mapa
+About & backup ⇒ Sobre e backup
+Permissions, sharing, backup ⇒ Permissões, compartilhamento, backup
+Back to the map ⇒ Voltar ao mapa
+Settings ⇒ Configurações
+Search settings ⇒ Buscar configurações
+Clear ⇒ Limpar
+Nothing matches \"${query.trim()}\" ⇒ Nada corresponde a \"${query.trim()}\"
+All settings ⇒ Todas as configurações
+Look ⇒ Visual
+Day and night ⇒ Dia e noite
+Auto ⇒ Automático
+Headlights ⇒ Faróis
+Sun times ⇒ Nascer/pôr do sol
+My times ⇒ Meus horários
+Day ⇒ Dia
+Night ⇒ Noite
+Auto follows the head unit's own night mode once it has switched to it, and sunrise and sunset until then. Headlights follows the head unit's night mode when it switches with your lights (turn on its headlight or illumination night-mode option), with sun times until then. Sun times switches at sunrise and sunset. My times switches at the times you set ⇒ Automático segue o modo noturno da própria central depois que ela muda para ele, e o nascer e o pôr do sol até lá. Faróis segue o modo noturno da central quando ele muda junto com as luzes (ative a opção de modo noturno pelos faróis ou pela iluminação), com os horários do sol até lá. Nascer/pôr do sol muda no nascer e no pôr do sol. Meus horários muda nos horários que você definir
+Night starts at ⇒ Noite começa às
+24-hour clock, for example 19:30 ⇒ Relógio de 24 horas, por exemplo 19:30
+Day starts at ⇒ Dia começa às
+24-hour clock, for example 06:45 ⇒ Relógio de 24 horas, por exemplo 06:45
+Map source ⇒ Fonte do mapa
+Mapbox: the 3D map. TomTom: TomTom's map in the Horizon colours (needs a TomTom key). All need the Mapbox token, as Mapbox's engine draws them ⇒ Mapbox: o mapa 3D. TomTom: o mapa da TomTom com as cores do Horizon (precisa de chave da TomTom). Todos precisam do token da Mapbox, porque é o motor da Mapbox que desenha
+Map detail ⇒ Detalhe do mapa
+Full 3D ⇒ 3D completo
+Lite ⇒ Leve
+Lightest ⇒ Mais leve
+Full 3D: buildings, landmarks, trees and shadows. Lite: flat buildings, no landmarks or shadows. Lightest: Mapbox's simpler 2D map, for slow head units ⇒ 3D completo: prédios, pontos turísticos, árvores e sombras. Leve: prédios planos, sem pontos turísticos nem sombras. Mais leve: o mapa 2D simples da Mapbox, para centrais lentas
+Glass panels ⇒ Painéis de vidro
+See-through cards tinted by the map. Off gives solid cards ⇒ Cartões translúcidos tingidos pelo mapa. Desligado deixa os cartões sólidos
+On the map ⇒ No mapa
+Live traffic ⇒ Trânsito ao vivo
+Satellite ⇒ Satélite
+3D buildings ⇒ Prédios 3D
+Detailed building fronts ⇒ Fachadas detalhadas
+Windows, doors and shopfronts on buildings, where Mapbox has them (mostly city centres) ⇒ Janelas, portas e vitrines nos prédios, onde a Mapbox tiver (principalmente em centros de cidade)
+3D landmarks ⇒ Pontos turísticos em 3D
+Detailed models of well-known buildings, bridges and stadiums ⇒ Modelos detalhados de prédios, pontes e estádios conhecidos
+Footpaths and trails ⇒ Calçadas e trilhas
+Turn off for a cleaner driving map ⇒ Desligue para um mapa de direção mais limpo
+3D hills and valleys ⇒ Morros e vales em 3D
+Real terrain. Lovely in hilly areas, but harder work for a slow head unit ⇒ Relevo real. Lindo em regiões montanhosas, mas pesa numa central lenta
+Route ribbon ⇒ Faixa da rota
+A soft shadow under the route line, and the route showing faintly through 3D buildings in front of it ⇒ Uma sombra suave sob a linha da rota, e a rota aparecendo de leve através dos prédios 3D à frente dela
+Fog and sky ⇒ Neblina e céu
+Haze towards the horizon to match the weather: grey when overcast, thicker in rain, thick in fog ⇒ Névoa no horizonte de acordo com o clima: cinza quando nublado, mais densa na chuva, espessa na neblina
+Zebra crossings ⇒ Faixas de pedestre
+Crossings on your route painted on the road, with Belisha beacons at zebras (close in) ⇒ Faixas de pedestre da sua rota pintadas na via (de perto)
+Keep the road ahead clear ⇒ Manter a via à frente visível
+Mapbox's 3D trees and landmarks are left out round your arrow and along the road just ahead, so they never hide it ⇒ As árvores e pontos turísticos 3D da Mapbox são ocultados perto da sua seta e na via logo à frente, para nunca escondê-la
+Tap to highlight ⇒ Tocar para destacar
+Tap a building to light it up; tap a shop or place, then hold on it to go there ⇒ Toque num prédio para destacá-lo; toque numa loja ou local e segure para ir até lá
+3D street lamps, traffic lights and cameras ⇒ Postes, semáforos e radares em 3D
+Real-size 3D models with lit lamps and lights (Full 3D). Off: the simpler badges and blocks ⇒ Modelos 3D em tamanho real com lâmpadas acesas (3D completo). Desligado: ícones e blocos simples
+Traffic lights ⇒ Semáforos
+Only the ones on your route. Now:  ⇒ Só os da sua rota. Agora:
+Speed cameras and roadworks ⇒ Radares e obras
+Street lamps ⇒ Postes de luz
+Now:  ⇒ Agora:
+Trees in parks ⇒ Árvores nos parques
+Mapbox's 3D trees in parks and along streets ⇒ Árvores 3D da Mapbox em parques e ao longo das ruas
+Street lamp spacing ⇒ Espaçamento dos postes
+Weather effects on the map ⇒ Efeitos de clima no mapa
+Real rain and snow falling on the map (and fog) to match the weather where you are ⇒ Chuva e neve caindo no mapa (e neblina) de acordo com o clima onde você está
+Rain radar layer ⇒ Camada de radar de chuva
+Live radar from RainViewer, under the route ⇒ Radar ao vivo do RainViewer, por baixo da rota
+Mapbox logo position ⇒ Posição do logo da Mapbox
+Top left ⇒ Superior esquerdo
+Top right ⇒ Superior direito
+Bottom left ⇒ Inferior esquerdo
+Bottom right ⇒ Inferior direito
+Mapbox requires their logo on the map; pick the corner that suits your layout ⇒ A Mapbox exige o logo dela no mapa; escolha o canto que combina com o seu layout
+Your arrow ⇒ Sua seta
+Real 3D model: drawn in the map itself, lit and shadowed like the buildings (Full 3D only; otherwise the picture of the same shape is used). The 3D arrow and car are pictures of 3D shapes. The flat arrow is the lightest to draw on a slow unit. ⇒ Modelo 3D real: desenhado no próprio mapa, com luz e sombra como os prédios (só no 3D completo; nos outros modos é usada a imagem da mesma forma). A seta 3D e o carro são imagens de formas 3D. A seta plana é a mais leve para uma central lenta.
+Couldn't read that picture (try a PNG or JPG) ⇒ Não foi possível ler essa imagem (tente PNG ou JPG)
+No app on this unit can pick a picture (try installing a file manager or gallery) ⇒ Nenhum app neste aparelho consegue escolher uma imagem (instale um gerenciador de arquivos ou uma galeria)
+Locator ⇒ Indicador de posição
+3D arrow ⇒ Seta 3D
+Car ⇒ Carro
+Real 3D model ⇒ Modelo 3D real
+Flat arrow ⇒ Seta plana
+Your picture ⇒ Sua imagem
+Model shape ⇒ Formato do modelo
+Arrow ⇒ Seta
+Glow ⇒ Realce
+A soft blue glow round the model, and the model lit up brightly ⇒ Um brilho azul suave em volta do modelo, e o modelo bem iluminado
+The real 3D model shows with Map detail: Full 3D. On Lite and Lightest the picture of the same shape is used. ⇒ O modelo 3D real aparece com Detalhe do mapa: 3D completo. Em Leve e Mais leve é usada a imagem da mesma forma.
+Picture ⇒ Imagem
+A PNG with a see-through background looks best. Point the top of it the way you drive ⇒ Um PNG com fundo transparente fica melhor. Aponte o topo da imagem para o sentido em que você dirige
+Change ⇒ Mudar
+Choose ⇒ Escolher
+Turns with you ⇒ Gira com você
+Lies flat on the road and turns as you drive, like the arrow. Off keeps it upright ⇒ Fica deitada na via e gira enquanto você dirige, como a seta. Desligado mantém em pé
+Round crop ⇒ Recorte redondo
+Cuts it to a circle with a white edge (good for photos) ⇒ Recorta num círculo com borda branca (bom para fotos)
+Car colour ⇒ Cor do carro
+White ⇒ Branco
+Silver ⇒ Prata
+Grey ⇒ Cinza
+Graphite ⇒ Grafite
+Black ⇒ Preto
+Navy ⇒ Azul-marinho
+Blue ⇒ Azul
+Sky blue ⇒ Azul-celeste
+Teal ⇒ Verde-azulado
+Green ⇒ Verde
+Olive ⇒ Oliva
+Yellow ⇒ Amarelo
+Orange ⇒ Laranja
+Red ⇒ Vermelho
+Burgundy ⇒ Vinho
+Purple ⇒ Roxo
+Pink ⇒ Rosa
+Champagne ⇒ Champanhe
+Brown ⇒ Marrom
+Arrow colour ⇒ Cor da seta
+Lime ⇒ Verde-limão
+Car size ⇒ Tamanho do carro
+Picture size ⇒ Tamanho da imagem
+Arrow size ⇒ Tamanho da seta
+Turn arrow on the route ⇒ Seta de manobra na rota
+A white arrow through the next junction or roundabout ⇒ Uma seta branca atravessando o próximo cruzamento ou rotatória
+Chevrons along the route ⇒ Setinhas ao longo da rota
+Small arrows along the line when zoomed in ⇒ Pequenas setas ao longo da linha com zoom aproximado
+Routes ⇒ Rotas
+Changes apply to the next route you plan. \"Avoid this road\" on the map only lasts for that trip. ⇒ As mudanças valem para a próxima rota planejada. \"Evitar esta via\" no mapa vale só para aquela viagem.
+Avoid toll roads ⇒ Evitar pedágios
+Avoid motorways ⇒ Evitar rodovias
+Avoid ferries ⇒ Evitar balsas
+Avoid unpaved roads ⇒ Evitar estradas de terra
+Avoid Clean Air Zones and ULEZ ⇒ Evitar zonas de ar limpo (Reino Unido)
+A zone you start or finish in can't be avoided ⇒ Uma zona onde você começa ou termina não pode ser evitada
+Eco routes ⇒ Rotas econômicas
+Fuel-efficient instead of fastest ⇒ Que gastam menos combustível em vez das mais rápidas
+While you drive ⇒ Enquanto você dirige
+Offer faster routes ⇒ Oferecer rotas mais rápidas
+Keep other routes on the map ⇒ Manter outras rotas no mapa
+Grey lines with +/− minutes you can tap any time. Off shows a \"Faster route found\" card instead ⇒ Linhas cinza com +/− minutos que você pode tocar a qualquer momento. Desligado mostra um cartão \"Rota mais rápida encontrada\"
+Fly along a new route ⇒ Sobrevoar uma nova rota
+A 3-second 3D fly-through before the overview. Tap the map to skip ⇒ Um sobrevoo 3D de 3 segundos antes da visão geral. Toque no mapa para pular
+Arrival moment ⇒ Momento da chegada
+The camera swoops to your destination and shows the nearest parking ⇒ A câmera desce até o seu destino e mostra o estacionamento mais próximo
+Parking near your destination ⇒ Estacionamento perto do destino
+About a mile before you arrive, car parks close by with the walk from each ⇒ Cerca de 1,5 km antes de chegar, estacionamentos próximos com a caminhada de cada um
+Suggest where you're going ⇒ Sugerir para onde você vai
+With the live journey time, including home and work at your usual times ⇒ Com o tempo de viagem ao vivo, incluindo casa e trabalho nos seus horários de costume
+Weather on the route ⇒ Clima na rota
+Fewer buttons while driving ⇒ Menos botões enquanto dirige
+Lock typing while driving ⇒ Bloquear digitação enquanto dirige
+Voice search still works ⇒ A busca por voz continua funcionando
+On screen ⇒ Na tela
+Route bar on the trip card ⇒ Barra da rota no cartão da viagem
+Traffic, cameras, services and stops, with your progress ⇒ Trânsito, radares, pontos de parada e paradas, com o seu progresso
+Next services card ⇒ Cartão do próximo ponto de parada
+Junction close-up ⇒ Cruzamento em close
+At slip roads, forks and lane splits the view drops lower and closer for the last 200 m ⇒ Em acessos, bifurcações e divisões de faixa a visão desce e se aproxima nos últimos 200 m
+Fly over route button ⇒ Botão de sobrevoar a rota
+On the route options: a 3D flight along the whole drive before you set off ⇒ Nas opções de rota: um voo 3D por todo o trajeto antes de sair
+Route back ⇒ Rota de volta
+On the arrival card: one tap for the way back to where you started ⇒ No cartão de chegada: um toque para voltar ao ponto de partida
+Weather advice ⇒ Avisos de clima
+A quiet note in heavy rain, snow, fog or ice when you're near the limit ⇒ Um aviso discreto com chuva forte, neve, neblina ou gelo quando você estiver perto do limite
+Level crossings and fords ⇒ Passagens de nível e travessias de rio
+A warning sign and a spoken warning for level crossings and fords on your route ⇒ Uma placa e um aviso falado para passagens de nível e travessias de rio na sua rota
+Your speed next to the limit ⇒ Sua velocidade ao lado do limite
+Speedometer ring ⇒ Anel do velocímetro
+Fills towards the limit, turning amber then red ⇒ Enche em direção ao limite, ficando âmbar e depois vermelho
+Speed limit and speedometer size ⇒ Tamanho do limite e do velocímetro
+On the phone and the car screen ⇒ No celular e na tela do carro
+Hazard radar ⇒ Radar de perigos
+The next 2 miles: bends, crossings, schools, bumps, cameras and checks ⇒ Os próximos 3 km: curvas, travessias, escolas, lombadas, radares e controles
+UK road signs on the turn card ⇒ Placas no estilo britânico no cartão de manobra
+Road and heading when driving without a route ⇒ Via e direção ao dirigir sem rota
+Dim the map in tunnels ⇒ Escurecer o mapa em túneis
+Living turn card ⇒ Cartão de manobra animado
+Grows and glows as the turn gets close ⇒ Cresce e brilha conforme a manobra se aproxima
+Flowing light along the route ⇒ Luz correndo ao longo da rota
+Night sky in 3D ⇒ Céu noturno em 3D
+Twinkling stars above the horizon after dark ⇒ Estrelas piscando acima do horizonte depois que escurece
+Junctions and lanes ⇒ Cruzamentos e faixas
+Lane guidance on the turn card ⇒ Indicação de faixa no cartão de manobra
+Lane guidance style ⇒ Estilo da indicação de faixa
+Lane hero view ⇒ Visão grande das faixas
+Classic strip ⇒ Faixa clássica
+Before junctions with two or more lanes the turn card shows a big lane picture with yours lit ⇒ Antes de cruzamentos com duas ou mais faixas, o cartão de manobra mostra um desenho grande das faixas com a sua acesa
+The small lane strip at every junction ⇒ A faixinha de pistas em todo cruzamento
+Next turn on the turn card ⇒ Próxima manobra no cartão
+When close ⇒ Quando próxima
+Always ⇒ Sempre
+Off ⇒ Desligado
+Only when the turn after comes straight after (within about 15 seconds) ⇒ Só quando a manobra seguinte vem logo depois (em uns 15 segundos)
+The turn after the next one, all the time ⇒ A manobra depois da próxima, o tempo todo
+Shown as ⇒ Mostrar como
+A line under the card ⇒ Uma linha sob o cartão
+A small arrow ⇒ Uma setinha
+Lanes painted on the map ⇒ Faixas pintadas no mapa
+Zoom in on lanes before a junction ⇒ Aproximar das faixas antes de um cruzamento
+Flatten the map to 2D at turns ⇒ Deixar o mapa em 2D nas manobras
+Tilt with speed ⇒ Inclinar conforme a velocidade
+Flatter when slow, a longer view at speed ⇒ Mais plano devagar, visão mais longa em velocidade
+Keep the arrow on the road with no route ⇒ Manter a seta na via sem rota
+Only show traffic on your route while navigating ⇒ Mostrar só o trânsito da sua rota durante a navegação
+Demo ⇒ Demonstração
+Demo drive button ⇒ Botão de direção de demonstração
+Plays a route back so you can try the guidance while parked ⇒ Reproduz uma rota para você testar a navegação parado
+Not downloaded yet ⇒ Ainda não baixado
+${z.size} zones:  ⇒ ${z.size} zonas:
+Clean air zones on this unit ⇒ Zonas de ar limpo neste aparelho
+Updating… ⇒ Atualizando…
+Update ⇒ Atualizar
+Sound ⇒ Som
+Spoken guidance ⇒ Orientação falada
+All ⇒ Tudo
+Alerts only ⇒ Só alertas
+Alerts only skips turn-by-turn but still speaks cameras, limits and hazards ⇒ Só alertas pula as manobras, mas ainda fala radares, limites e perigos
+Smarter directions ⇒ Direções mais inteligentes
+Junction numbers and sign destinations, the next move when it comes straight after, and fewer early prompts on roads you drive a lot ⇒ Números de saída e destinos das placas, a manobra seguinte quando vem logo depois e menos avisos antecipados em vias que você usa muito
+Voice and language ⇒ Voz e idioma
+Uses the system text-to-speech voice ⇒ Usa a voz de texto para fala do sistema
+Open ⇒ Abrir
+Volume ⇒ Volume
+Speed ⇒ Velocidade
+Warn when over the limit ⇒ Avisar ao passar do limite
+Warn when over by ⇒ Avisar quando passar
+Say when the limit changes ⇒ Falar quando o limite mudar
+Show estimated limits ⇒ Mostrar limites estimados
+Where no limit is mapped, show the usual one for that kind of road (greyed out). Off shows no sign instead of a guess ⇒ Onde não há limite mapeado, mostra o habitual para aquele tipo de via (em cinza). Desligado não mostra placa em vez de um palpite
+Speed cameras ⇒ Radares
+Off where they're banned ⇒ Desligar onde são proibidos
+France, Germany and Switzerland don't allow camera warnings, so they switch off there by themselves ⇒ França, Alemanha e Suíça não permitem avisos de radar, então eles se desligam sozinhos lá
+Average speed checks ⇒ Controles de velocidade média
+Shows your average against the limit ⇒ Mostra sua média em relação ao limite
+On the road ⇒ Na via
+Average speed checks, speed bumps, schools and clean air zones come from OpenStreetMap, so some may be missing. ⇒ Controles de velocidade média, lombadas, escolas e zonas de ar limpo vêm do OpenStreetMap, então alguns podem estar faltando.
+Roadworks and incidents ⇒ Obras e ocorrências
+Wrong-way warning ⇒ Aviso de contramão
+If you turn the wrong way into a one-way street ⇒ Se você entrar na contramão numa rua de mão única
+Speed bumps ⇒ Lombadas
+Schools at school-run times ⇒ Escolas em horário de entrada e saída
+Clean Air Zones and ULEZ ⇒ Zonas de ar limpo (Reino Unido)
+Break reminder after 2 hours ⇒ Lembrete de pausa após 2 horas
+Your reports ⇒ Seus relatos
+Make a report from the map options button. Reports stay on this unit and fade after a few hours. ⇒ Faça um relato pelo botão de opções do mapa. Os relatos ficam neste aparelho e somem depois de algumas horas.
+Warn about reports ahead ⇒ Avisar sobre relatos à frente
+Reports still active ⇒ Relatos ainda ativos
+Not set ⇒ Não definido
+Saved places ⇒ Locais salvos
+To set Home or Work, tap Set home / Set work under the search bar, or the house or briefcase on the route options. ⇒ Para definir Casa ou Trabalho, toque em Definir casa / Definir trabalho sob a barra de busca, ou na casa ou na maleta nas opções de rota.
+Home ⇒ Casa
+Work ⇒ Trabalho
+Your places ⇒ Seus locais
+Shown as pills under the search bar, after Home and Work. Add one with the + pill there, or the bookmark on the route options. ⇒ Aparecem como botões sob a barra de busca, depois de Casa e Trabalho. Adicione um pelo botão + ali, ou pelo marcador nas opções de rota.
+No places of your own yet. ⇒ Nenhum local seu ainda.
+Rename ${lp.label} ⇒ Renomear ${lp.label}
+Save ⇒ Salvar
+Rename ⇒ Renomear
+Remove ⇒ Remover
+Add a place ⇒ Adicionar um local
+Add ⇒ Adicionar
+Favourites ⇒ Favoritos
+No favourites yet. Tap the star on a destination to add one. ⇒ Nenhum favorito ainda. Toque na estrela de um destino para adicionar.
+Remove every favourite ⇒ Remover todos os favoritos
+Remove all ⇒ Remover tudo
+History ⇒ Histórico
+Swipe a place sideways on the Saved & recent list to take it off. ⇒ Deslize um local para o lado na lista Salvos e recentes para tirá-lo.
+Saved & recent under the search bar ⇒ Salvos e recentes sob a barra de busca
+The list of favourites and recent places on the map ⇒ A lista de favoritos e locais recentes no mapa
+Recent destinations ⇒ Destinos recentes
+${pl.recents().size} recent, plus places remembered for searching without signal ⇒ ${pl.recents().size} recentes, mais locais guardados para buscar sem sinal
+History cleared ⇒ Histórico apagado
+Trip log ⇒ Histórico de viagens
+No trips yet. Every drive is recorded here when you park. ⇒ Nenhuma viagem ainda. Cada trajeto é registrado aqui quando você estaciona.
+${shown.size} trips ⇒ ${shown.size} viagens
+ in all ⇒  no total
+${Geo.fmtDur(mins * 60.0)} · moving ${Geo.fmtDur(t.moving.toDouble())} · top ${Math.round(t.maxSpeed * k)} $unit ⇒ ${Geo.fmtDur(mins * 60.0)} · em movimento ${Geo.fmtDur(t.moving.toDouble())} · máx. ${Math.round(t.maxSpeed * k)} $unit
+Fuel prices ⇒ Preços de combustível
+Live prices come from the government's Fuel Finder scheme. It's free: on gov.uk search \"Fuel Finder\", register as an information recipient with a GOV.UK One Login, then paste the client ID and secret here. Without them the fuel list still works, just without prices. ⇒ Os preços ao vivo vêm do programa Fuel Finder do governo britânico e só valem para o Reino Unido. Sem eles a lista de postos continua funcionando, só que sem preços.
+Your fuel ⇒ Seu combustível
+Unleaded ⇒ Gasolina comum
+Super ⇒ Gasolina aditivada
+Diesel ⇒ Diesel
+Electric ⇒ Elétrico
+Suggest a fuel stop on long trips ⇒ Sugerir parada para abastecer em viagens longas
+Over about 95 miles, a charging point along the way with the shortest detour ⇒ Acima de uns 150 km, um ponto de recarga no caminho com o menor desvio
+Over about 95 miles, the best-value station along the way ⇒ Acima de uns 150 km, o posto com melhor custo-benefício no caminho
+Prices ⇒ Preços
+Add your details first ⇒ Adicione seus dados primeiro
+Update now ⇒ Atualizar agora
+Downloading stations and prices (the first time takes a minute)… ⇒ Baixando postos e preços (a primeira vez leva um minuto)…
+Spotted a wrong price? ⇒ Viu um preço errado?
+Report it ⇒ Relatar
+Fuel cost on the route options ⇒ Custo de combustível nas opções de rota
+With both filled in, each route shows roughly what it will cost to charge for. ⇒ Com os dois preenchidos, cada rota mostra mais ou menos quanto vai custar a recarga.
+With both filled in, each route shows roughly what it will cost in fuel. ⇒ Com os dois preenchidos, cada rota mostra mais ou menos quanto vai custar de combustível.
+Share your ETA ⇒ Compartilhar sua chegada
+The share button on the trip card texts your arrival time and a map link. On a head unit without a SIM it opens your messaging app instead. ⇒ O botão de compartilhar no cartão da viagem envia por SMS o horário de chegada e um link do mapa. Numa central sem chip, ele abre o app de mensagens.
+Send it to ⇒ Enviar para
+No one chosen yet ⇒ Ninguém escolhido ainda
+Installed (%.1f MB) ⇒ Instalado (%.1f MB)
+Not downloaded ⇒ Não baixado
+Place names ⇒ Nomes de lugares
+A small download of towns and villages in $where, so you can search for them without signal even without the full pack. ⇒ Um download pequeno de cidades e vilarejos em $where, para buscar por eles sem sinal mesmo sem o pacote completo.
+Towns and villages ⇒ Cidades e vilarejos
+Downloading… ⇒ Baixando…
+Download ⇒ Baixar
+Downloading (needs signal)… ⇒ Baixando (precisa de sinal)…
+Installed: $n places ⇒ Instalado: $n locais
+Offline places ready ⇒ Locais offline prontos
+Failed: ${e.message} ⇒ Falhou: ${e.message}

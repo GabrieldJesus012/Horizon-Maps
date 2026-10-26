@@ -1,0 +1,12 @@
+@@ Geo.kt
+Today ⇒ Hoje
+Clear ⇒ Céu limpo
+Partly cloudy ⇒ Parcialmente nublado
+Overcast ⇒ Nublado
+Fog ⇒ Neblina
+Drizzle ⇒ Garoa
+Rain ⇒ Chuva
+Snow ⇒ Neve
+Showers ⇒ Pancadas de chuva
+Snow showers ⇒ Pancadas de neve
+Thunderstorm ⇒ Tempestade

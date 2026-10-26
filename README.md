@@ -10,3 +10,8 @@ O código fica em `HorizonNav.zip`. A cada envio, o GitHub Actions compila e pub
 `https://github.com/GabrieldJesus012/Horizon-Maps/releases/download/app/HorizonNav-BR.apk`
 
 Uso pessoal, sem redistribuição.
+
+## Tradução
+
+A interface, as mensagens e a voz de navegação estão em português. A pasta `traducao/` guarda as ferramentas e os mapas de
+tradução (`inglês ⇒ português`), para reaplicar tudo quando o autor publicar uma versão nova: `traducao/aplicar.sh <pasta do projeto original>`.

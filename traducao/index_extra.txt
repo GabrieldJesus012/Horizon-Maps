@@ -1,0 +1,44 @@
+Full 3D, Lite or Lightest ⇒ 3D completo, Leve ou Mais leve
+Mapbox, Horizon, Faded or Grey ⇒ Mapbox, Horizon, Suave ou Cinza
+Pick the corner for Mapbox's logo ⇒ Escolha o canto do logo da Mapbox
+The real 3D model: arrow or car ⇒ O modelo 3D real: seta ou carro
+Windows and shopfronts on buildings ⇒ Janelas e vitrines nos prédios
+Models of well-known buildings ⇒ Modelos de prédios conhecidos
+Terrain ⇒ Relevo
+Trees left out round your arrow and ahead ⇒ Árvores ocultadas perto da sua seta e à frente
+Tap buildings and places ⇒ Tocar em prédios e locais
+Real 3D models ⇒ Modelos 3D reais
+A soft glow round the real 3D model ⇒ Um brilho suave em volta do modelo 3D real
+The Mapbox map within 15, 30 or 50 km of Home, for no signal ⇒ O mapa da Mapbox num raio de 15, 30 ou 50 km de Casa, para quando não houver sinal
+The Mapbox map along the route, for no signal ⇒ O mapa da Mapbox ao longo da rota, para quando não houver sinal
+TomTom or Mapbox ⇒ TomTom ou Mapbox
+3D lamp posts, lit at night ⇒ Postes 3D, acesos à noite
+Rain, snow or fog to match the weather where you are ⇒ Chuva, neve ou neblina de acordo com o clima onde você está
+Grey lines with +/− minutes you can tap any time. Off shows a Faster route found card instead ⇒ Linhas cinza com +/− minutos que você pode tocar a qualquer momento. Desligado mostra um cartão Rota mais rápida encontrada
+A lower, closer view at complicated junctions ⇒ Uma visão mais baixa e próxima em cruzamentos complicados
+3D flight along the drive ⇒ Voo 3D ao longo do trajeto
+The way back from the arrival card ⇒ O caminho de volta pelo cartão de chegada
+A note in bad weather near the limit ⇒ Um aviso com mau tempo perto do limite
+Warnings on your route ⇒ Avisos na sua rota
+Route shadow and see-through over buildings ⇒ Sombra da rota e transparência sobre os prédios
+Horizon haze to match the weather ⇒ Névoa no horizonte de acordo com o clima
+Painted on the road with beacons ⇒ Pintadas na via
+The turn after the next one: when close, always or off ⇒ A manobra depois da próxima: quando próxima, sempre ou desligado
+How many reports are still showing ⇒ Quantos relatos ainda aparecem
+Recent places, and places remembered for searching without signal ⇒ Locais recentes e locais guardados para buscar sem sinal
+Fuel economy (miles per gallon) ⇒ Consumo (milhas por galão)
+Fuel price (pence per litre) ⇒ Preço do combustível (pence por litro)
+Client ID ⇒ Client ID
+Client secret ⇒ Client secret
+Right- or left-hand drive: mirrors the map screen for driving on the right ⇒ Volante à direita ou à esquerda: espelha a tela do mapa para quem dirige do lado direito da via
+Frames drawn, camera moves and pauses, shown on the map ⇒ Quadros desenhados, movimentos de câmera e pausas, mostrados no mapa
+Send a bug report or an idea, with the app version and your unit ⇒ Envie um relatório de erro ou uma ideia, com a versão do app e o seu aparelho
+Offline pack ⇒ Pacote offline
+Delete the pack ⇒ Apagar o pacote
+Frees up the space the offline pack uses ⇒ Libera o espaço que o pacote offline ocupa
+Storage ⇒ Armazenamento
+Saved places with your own names, shown as pills under the search bar ⇒ Locais salvos com seus próprios nomes, mostrados como botões sob a barra de busca
+Size of the 3D car or arrow ⇒ Tamanho do carro ou da seta 3D
+Set or clear your home ⇒ Definir ou apagar sua casa
+Set or clear your work place ⇒ Definir ou apagar seu trabalho
+Every drive, recorded when you park ⇒ Cada trajeto, registrado quando você estaciona

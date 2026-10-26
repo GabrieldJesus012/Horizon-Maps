@@ -1,0 +1,183 @@
+@@ NavEngine.kt
+France ⇒ França
+Germany ⇒ Alemanha
+Switzerland ⇒ Suíça
+Home ⇒ Casa
+Work ⇒ Trabalho
+Where you started ⇒ Ponto de partida
+Sound: all ⇒ Som: tudo
+Sound: alerts only ⇒ Som: só alertas
+Sound: off ⇒ Som: desligado
+$name isn't working right now, so ${if (backup == "tomtom") "TomTom" else "Mapbox"} is being used instead ⇒ $name não está funcionando agora, então ${if (backup == "tomtom") "TomTom" else "Mapbox"} está sendo usado no lugar
+Mapbox didn't accept your access token, so it isn't being used. Check it in Settings > Search & keys. ⇒ A Mapbox não aceitou o seu token de acesso, então ele não está sendo usado. Confira em Configurações > Busca e chaves.
+Mapbox search didn't work: ${err.take(120)} ⇒ A busca da Mapbox não funcionou: ${err.take(120)}
+Carrying on to ${d.name} ⇒ Seguindo para ${d.name}
+Dropped pin ⇒ Ponto marcado
+$name: hold on it to go there ⇒ $name: segure para ir até lá
+Test alert: speed camera ahead ⇒ Alerta de teste: radar à frente
+Speed camera ahead ⇒ Radar à frente
+Starting… ⇒ Iniciando…
+Pack ready ⇒ Pacote pronto
+Offline pack ready ⇒ Pacote offline pronto
+Download failed: ${e.message ?: e.javaClass.simpleName}. Tap Download again to carry on. ⇒ O download falhou: ${e.message ?: e.javaClass.simpleName}. Toque em Baixar de novo para continuar.
+Mapbox turned down your access token (${if (m.contains("403")) "403" else "401"}), so the map can't load. Check the token in Settings > Search & keys and at account.mapbox.com. ⇒ A Mapbox recusou o seu token de acesso (${if (m.contains("403")) "403" else "401"}), então o mapa não carrega. Confira o token em Configurações > Busca e chaves e em account.mapbox.com.
+Map: $msg ⇒ Mapa: $msg
+No signal for the map: trying again… ⇒ Sem sinal para o mapa: tentando de novo…
+Add your Mapbox access token (it starts pk.) in Settings > Search & keys to show the map ⇒ Adicione o seu token de acesso da Mapbox (começa com pk.) em Configurações > Busca e chaves para mostrar o mapa
+TomTom turned down the key for its map, so Mapbox's map is showing ⇒ A TomTom recusou a chave para o mapa dela, então o mapa da Mapbox está na tela
+Add a TomTom key in Settings > Search & keys for TomTom's map. Showing Mapbox's map ⇒ Adicione uma chave da TomTom em Configurações > Busca e chaves para o mapa da TomTom. Mostrando o mapa da Mapbox
+Location permission is needed for navigation ⇒ A permissão de localização é necessária para a navegação
+Snow ⇒ Neve
+Rain ⇒ Chuva
+ likely at arrival (${h.rain}%) ⇒  provável na chegada (${h.rain}%)
+Speed limit $n ⇒ Limite de velocidade $n
+Stop added: ${p.name} ⇒ Parada adicionada: ${p.name}
+Car park ⇒ Estacionamento
+ near ${d.name} ⇒  perto de ${d.name}
+Arrive at  ⇒ Chegue a
+your destination ⇒ seu destino
+ onto $road ⇒  na $road
+That stretch is too short to avoid ⇒ Esse trecho é curto demais para evitar
+No GPS fix yet ⇒ Ainda sem sinal de GPS
+Nothing to avoid ahead ⇒ Nada para evitar à frente
+Looking for a way round… ⇒ Procurando um desvio…
+Checking… ⇒ Verificando…
+Couldn't check: no connection ⇒ Não foi possível verificar: sem conexão
+You have the latest version ⇒ Você tem a versão mais recente
+Version ${u.version} is available ⇒ Versão ${u.version} disponível
+Allow Horizon Nav to install updates, then tap Update again ⇒ Permita que o Horizon Nav instale atualizações e toque em Atualizar de novo
+Starting the download… ⇒ Iniciando o download…
+Opening the download in the browser… ⇒ Abrindo o download no navegador…
+Download failed. Get it from the Reddit post link instead. ⇒ O download falhou. Baixe pelo link da release no GitHub.
+Checking the ${r.name} pack… ⇒ Verificando o pacote ${r.name}…
+The ${r.name} pack isn't available yet. It appears here once it has been built. ⇒ O pacote ${r.name} ainda não está disponível. Ele aparece aqui quando for gerado.
+Couldn't reach the download. Check the connection and try again. ⇒ Não foi possível acessar o download. Verifique a conexão e tente de novo.
+No signal, and nothing saved or downloaded matches ⇒ Sem sinal, e nada salvo ou baixado corresponde
+No signal. Download the offline pack or place names in Settings > Offline maps to search with no signal ⇒ Sem sinal. Baixe o pacote offline ou os nomes de lugares em Configurações > Mapas offline para buscar sem sinal
+No signal: showing saved places and offline towns ⇒ Sem sinal: mostrando locais salvos e cidades offline
+Search failed: weak or no signal ⇒ A busca falhou: sinal fraco ou ausente
+No matches. Try adding a town or postcode. ⇒ Nada encontrado. Tente acrescentar a cidade ou o CEP.
+Weak signal: showing saved places and offline towns ⇒ Sinal fraco: mostrando locais salvos e cidades offline
+${if (slot == "home") "Home" else "Work"} saved: ${p.name} ⇒ ${if (slot == "home") "Casa" else "Trabalho"} salvo: ${p.name}
+To plan routes, add a free TomTom key or Mapbox token in Settings > Search & keys, or download the offline pack ⇒ Para planejar rotas, adicione uma chave gratuita da TomTom ou um token da Mapbox em Configurações > Busca e chaves, ou baixe o pacote offline
+No GPS fix yet: routing from the map centre. Use the demo drive to simulate. ⇒ Ainda sem GPS: calculando a partir do centro do mapa. Use a direção de demonstração para simular.
+Offline route: no traffic or live data ⇒ Rota offline: sem trânsito nem dados ao vivo
+Mapbox returned no turn instructions for this route ⇒ A Mapbox não retornou instruções de manobra para esta rota
+This key returned no turn instructions. Check it has TomTom Routing API access ⇒ Esta chave não retornou instruções de manobra. Confira se ela tem acesso à Routing API da TomTom
+Departure time not supported here: showing live traffic ⇒ Horário de saída não disponível aqui: mostrando o trânsito ao vivo
+Couldn't find a way round the areas you're avoiding, so the route goes through them ⇒ Não foi possível contornar as áreas que você está evitando, então a rota passa por elas
+No signal: this route will start by itself as soon as there is a connection ⇒ Sem sinal: esta rota começa sozinha assim que houver conexão
+Route failed: $m ⇒ A rota falhou: $m
+ expected in about ${it.minutes} min on your route ⇒  prevista em cerca de ${it.minutes} min na sua rota
+ expected in about ${it.minutes} minutes on your route ⇒  prevista em cerca de ${it.minutes} minutos na sua rota
+No GPS fix yet. Use the play button for a demo drive. ⇒ Ainda sem GPS. Use o botão de play para uma direção de demonstração.
+No alternative routes. Switch on 'Alternatives' first. ⇒ Sem rotas alternativas. Ative 'Alternativas' primeiro.
+Alternative routes on ⇒ Rotas alternativas ligadas
+Alternative routes off ⇒ Rotas alternativas desligadas
+Rerouting… ⇒ Recalculando…
+Rerouting: weak signal, still trying… ⇒ Recalculando: sinal fraco, ainda tentando…
+Reroute failed ($err), trying again… ⇒ O recálculo falhou ($err), tentando de novo…
+You have been driving for $hrs hours. Time for a break? ⇒ Você está dirigindo há $hrs horas. Que tal uma pausa?
+You have been driving for $hrs hours. Consider taking a break. ⇒ Você está dirigindo há $hrs horas. Considere fazer uma pausa.
+No signal to search for that ⇒ Sem sinal para buscar isso
+Could not find \"$q\" ⇒ Não foi possível encontrar \"$q\"
+Search failed: ${e.message} ⇒ A busca falhou: ${e.message}
+No position yet ⇒ Ainda sem posição
+Search took too long. Check the signal and try again. ⇒ A busca demorou demais. Verifique o sinal e tente de novo.
+Nothing found along the route ahead ⇒ Nada encontrado ao longo da rota à frente
+Nothing found nearby ⇒ Nada encontrado por perto
+updated $a ⇒ atualizado $a
+Motorway services ⇒ Ponto de parada na rodovia
+Shared from another app ⇒ Compartilhado de outro app
+Roadworks ⇒ Obras
+Road closed ⇒ Via interditada
+Accident ⇒ Acidente
+Traffic jam ⇒ Congestionamento
+Lane closed ⇒ Faixa interditada
+Hazard ⇒ Perigo
+Incident ⇒ Ocorrência
+Speed camera alerts are off in $name, where they aren't allowed. You can change this in Settings > Alerts. ⇒ Os alertas de radar estão desligados em $name, onde não são permitidos. Você pode mudar isso em Configurações > Alertas.
+Broken-down vehicle ⇒ Veículo quebrado
+Mobile speed camera ⇒ Radar móvel
+Police ⇒ Polícia
+Waiting for GPS ⇒ Aguardando o GPS
+${reportName(kind)} report saved here ⇒ Relato de ${reportName(kind).lowercase()} salvo aqui
+Reports cleared ⇒ Relatos apagados
+${reportName(r.kind)} reported ahead ⇒ ${reportName(r.kind)} relatado à frente
+, about $mins minutes delay ⇒ , cerca de $mins minutos de atraso
+${next.third} ahead, ${Geo.fmtDist(d, imperial)}$extra ⇒ ${next.third} à frente, ${Geo.fmtDist(d, imperial)}$extra
+${next.third} ahead in ${Geo.spoken(d, imperial)}$extra ⇒ ${next.third} à frente em ${Geo.spoken(d, imperial)}$extra
+A faster route is available, saving ${-best.diffMin} minutes. Tap it on the map to switch. ⇒ Há uma rota mais rápida, economizando ${-best.diffMin} minutos. Toque nela no mapa para trocar.
+A faster route is available, saving $saved minutes ⇒ Há uma rota mais rápida, economizando $saved minutos
+Switched to the faster route ⇒ Trocado para a rota mais rápida
+Switched: about ${-a.diffMin} min quicker ⇒ Rota trocada: cerca de ${-a.diffMin} min mais rápida
+Switched: about ${a.diffMin} min longer ⇒ Rota trocada: cerca de ${a.diffMin} min mais longa
+Switched route ⇒ Rota trocada
+Stop reached: ${via[0].name} ⇒ Parada alcançada: ${via[0].name}
+Destination ⇒ Destino
+ · on the $side ⇒  · à ${if (side == "left") "esquerda" else "direita"}
+In about a mile ⇒ Em cerca de uma milha
+In about one and a half kilometres ⇒ Em cerca de um quilômetro e meio
+Then  ⇒ Depois,
+ onto ${nxt.street} ⇒  na ${nxt.street}
+ onto ${cur.street} ⇒  na ${cur.street}
+In ${Geo.spoken(d, imperial)}, $phrase ⇒ Em ${Geo.spoken(d, imperial)}, $phrase
+In ${Geo.spoken(d, imperial)}, you will arrive ⇒ Em ${Geo.spoken(d, imperial)}, você vai chegar
+. Your destination is on the $side ⇒ . Seu destino fica à ${if (side == "left") "esquerda" else "direita"}
+In ${Geo.spoken(d, imperial)}, $phrase$lane ⇒ Em ${Geo.spoken(d, imperial)}, $phrase$lane
+Your destination is on the $side ⇒ Seu destino fica à ${if (side == "left") "esquerda" else "direita"}
+You have arrived ⇒ Você chegou
+Rain radar isn't available right now (needs signal) ⇒ O radar de chuva não está disponível agora (precisa de sinal)
+heavy traffic ⇒ trânsito intenso
+some traffic ⇒ algum trânsito
+light traffic ⇒ trânsito leve
+Speed camera ⇒ Radar
+Average speed check ⇒ Controle de velocidade média
+Speed bump ⇒ Lombada
+School · school run ⇒ Escola · horário escolar
+School ⇒ Escola
+Crossing ⇒ Travessia
+Level crossing ⇒ Passagem de nível
+Ford ⇒ Travessia de rio
+Bend left ⇒ Curva à esquerda
+Bend right ⇒ Curva à direita
+take junction ${cur.exitNo} ⇒ pegue a saída ${cur.exitNo}
+ for the ${refs[0]} ⇒  para a ${refs[0]}
+ towards  ⇒  sentido
+ and  ⇒  e
+ for the $target ⇒  para a $target
+ onto $target ⇒  na $target
+, then  ⇒ , depois
+Leave now to arrive by ${f.format(Date(arriveMs))} ⇒ Saia agora para chegar até ${f.format(Date(arriveMs))}
+Leave by ${f.format(Date(leave))} to arrive by ${f.format(Date(arriveMs))}. I'll remind you. ⇒ Saia até ${f.format(Date(leave))} para chegar até ${f.format(Date(arriveMs))}. Eu aviso você.
+Leave in 10 minutes for ${cur.dest.name} ⇒ Saia em 10 minutos para ${cur.dest.name}
+Leave in about 10 minutes for ${cur.dest.name} ⇒ Saia em cerca de 10 minutos para ${cur.dest.name}
+Time to leave for ${cur.dest.name} ⇒ Hora de sair para ${cur.dest.name}
+It's time to leave for ${cur.dest.name} ⇒ Está na hora de sair para ${cur.dest.name}
+Wrong way! This is a one-way road ⇒ Contramão! Esta é uma via de mão única
+Warning. You may be going the wrong way on a one-way road. ⇒ Atenção. Você pode estar na contramão numa via de mão única.
+Average speed check for ${Geo.fmtDist(cur.end - progress, imperial)} ⇒ Controle de velocidade média por ${Geo.fmtDist(cur.end - progress, imperial)}
+Average speed check for ${Geo.spoken(cur.end - progress, imperial)} ⇒ Controle de velocidade média por ${Geo.spoken(cur.end - progress, imperial)}
+Your average speed is over the limit ⇒ Sua velocidade média está acima do limite
+End of average speed check ⇒ Fim do controle de velocidade média
+Average speed check ahead, ${Geo.fmtDist(next.end - next.start, imperial)} long ⇒ Controle de velocidade média à frente, com ${Geo.fmtDist(next.end - next.start, imperial)}
+Average speed check ahead ⇒ Controle de velocidade média à frente
+Fog ⇒ Neblina
+Heavy rain ⇒ Chuva forte
+Thunderstorms ⇒ Tempestades
+Freezing rain ⇒ Chuva congelante
+$what · take it steady, ${Math.round(lim * k / 5.0) * 5} limit ⇒ $what · vá com calma, limite ${Math.round(lim * k / 5.0) * 5}
+Level crossing ahead ⇒ Passagem de nível à frente
+Ford ahead: the road may be flooded ⇒ Travessia de rio à frente: a via pode estar alagada
+Ford ahead. The road may be flooded ⇒ Travessia de rio à frente. A via pode estar alagada
+Speed bump ahead ⇒ Lombada à frente
+School ahead: ${h.poi.name} ⇒ Escola à frente: ${h.poi.name}
+School ahead ⇒ Escola à frente
+You are in $name ⇒ Você está em $name
+Entering $name in ${Geo.fmtDist(ahead, imperial)} ⇒ Entrando em $name em ${Geo.fmtDist(ahead, imperial)}
+You are in $name. A charge may apply. ⇒ Você está em $name. Pode haver cobrança.
+You are about to enter $name. A charge may apply. ⇒ Você vai entrar em $name. Pode haver cobrança.
+Pick a destination first, then start the demo drive ⇒ Escolha um destino primeiro e depois inicie a direção de demonstração
+
+@@ Extras.kt
+Dropped pin ⇒ Ponto marcado

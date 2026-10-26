@@ -1,0 +1,159 @@
+@@ PackRegions.kt
+Albania ⇒ Albânia
+Austria ⇒ Áustria
+Belarus ⇒ Bielorrússia
+Belgium ⇒ Bélgica
+Bosnia & Herzegovina ⇒ Bósnia e Herzegovina
+Bulgaria ⇒ Bulgária
+Croatia ⇒ Croácia
+Cyprus ⇒ Chipre
+Czechia ⇒ Tchéquia
+Denmark ⇒ Dinamarca
+Estonia ⇒ Estônia
+Faroe Islands ⇒ Ilhas Faroé
+Finland ⇒ Finlândia
+France ⇒ França
+Georgia ⇒ Geórgia
+Germany ⇒ Alemanha
+Greece ⇒ Grécia
+Hungary ⇒ Hungria
+Iceland ⇒ Islândia
+Italy ⇒ Itália
+Latvia ⇒ Letônia
+Lithuania ⇒ Lituânia
+Luxembourg ⇒ Luxemburgo
+North Macedonia ⇒ Macedônia do Norte
+Moldova ⇒ Moldávia
+Monaco ⇒ Mônaco
+Netherlands ⇒ Países Baixos
+Norway ⇒ Noruega
+Poland ⇒ Polônia
+Romania ⇒ Romênia
+Serbia ⇒ Sérvia
+Slovakia ⇒ Eslováquia
+Slovenia ⇒ Eslovênia
+Spain ⇒ Espanha
+Sweden ⇒ Suécia
+Switzerland ⇒ Suíça
+Turkey ⇒ Turquia
+Ukraine ⇒ Ucrânia
+Haiti & Dominican Republic ⇒ Haiti e República Dominicana
+Nicaragua ⇒ Nicarágua
+Panama ⇒ Panamá
+Bolivia ⇒ Bolívia
+Brazil ⇒ Brasil
+Colombia ⇒ Colômbia
+Ecuador ⇒ Equador
+Paraguay ⇒ Paraguai
+Guyana ⇒ Guiana
+Uruguay ⇒ Uruguai
+Afghanistan ⇒ Afeganistão
+Armenia ⇒ Armênia
+Azerbaijan ⇒ Azerbaijão
+Bhutan ⇒ Butão
+Cambodia ⇒ Camboja
+East Timor ⇒ Timor-Leste
+Gulf States (UAE, Saudi Arabia, Qatar…) ⇒ Países do Golfo (Emirados, Arábia Saudita, Catar…)
+India ⇒ Índia
+Indonesia ⇒ Indonésia
+Iran ⇒ Irã
+Iraq ⇒ Iraque
+Israel & Palestine ⇒ Israel e Palestina
+Japan ⇒ Japão
+Jordan ⇒ Jordânia
+Kazakhstan ⇒ Cazaquistão
+Kyrgyzstan ⇒ Quirguistão
+Lebanon ⇒ Líbano
+Malaysia, Singapore & Brunei ⇒ Malásia, Singapura e Brunei
+Maldives ⇒ Maldivas
+Mongolia ⇒ Mongólia
+Myanmar ⇒ Mianmar
+North Korea ⇒ Coreia do Norte
+Pakistan ⇒ Paquistão
+Philippines ⇒ Filipinas
+South Korea ⇒ Coreia do Sul
+Syria ⇒ Síria
+Tajikistan ⇒ Tadjiquistão
+Thailand ⇒ Tailândia
+Turkmenistan ⇒ Turcomenistão
+Uzbekistan ⇒ Uzbequistão
+Vietnam ⇒ Vietnã
+Yemen ⇒ Iêmen
+Algeria ⇒ Argélia
+Botswana ⇒ Botsuana
+Burkina Faso ⇒ Burquina Faso
+Cameroon ⇒ Camarões
+Canary Islands ⇒ Ilhas Canárias
+Cape Verde ⇒ Cabo Verde
+Central African Republic ⇒ República Centro-Africana
+Chad ⇒ Chade
+Comoros ⇒ Comores
+Djibouti ⇒ Djibuti
+Egypt ⇒ Egito
+Equatorial Guinea ⇒ Guiné Equatorial
+Eritrea ⇒ Eritreia
+Ethiopia ⇒ Etiópia
+Gabon ⇒ Gabão
+Ghana ⇒ Gana
+Guinea ⇒ Guiné
+Guinea-Bissau ⇒ Guiné-Bissau
+Ivory Coast ⇒ Costa do Marfim
+Kenya ⇒ Quênia
+Lesotho ⇒ Lesoto
+Liberia ⇒ Libéria
+Libya ⇒ Líbia
+Malawi ⇒ Malaui
+Mauritania ⇒ Mauritânia
+Mauritius ⇒ Maurício
+Morocco ⇒ Marrocos
+Mozambique ⇒ Moçambique
+Namibia ⇒ Namíbia
+Niger ⇒ Níger
+Nigeria ⇒ Nigéria
+Rwanda ⇒ Ruanda
+St Helena, Ascension & Tristan da Cunha ⇒ Santa Helena, Ascensão e Tristão da Cunha
+São Tomé & Príncipe ⇒ São Tomé e Príncipe
+Senegal & Gambia ⇒ Senegal e Gâmbia
+Seychelles ⇒ Seicheles
+Sierra Leone ⇒ Serra Leoa
+Somalia ⇒ Somália
+South Africa ⇒ África do Sul
+South Sudan ⇒ Sudão do Sul
+Sudan ⇒ Sudão
+Eswatini ⇒ Essuatíni
+Tanzania ⇒ Tanzânia
+Tunisia ⇒ Tunísia
+Zambia ⇒ Zâmbia
+Zimbabwe ⇒ Zimbábue
+Australia ⇒ Austrália
+New Zealand ⇒ Nova Zelândia
+American Oceania (Guam, Samoa…) ⇒ Oceania americana (Guam, Samoa…)
+Cook Islands ⇒ Ilhas Cook
+Kiribati ⇒ Quiribati
+Marshall Islands ⇒ Ilhas Marshall
+Micronesia ⇒ Micronésia
+New Caledonia ⇒ Nova Caledônia
+Papua New Guinea ⇒ Papua-Nova Guiné
+French Polynesia ⇒ Polinésia Francesa
+Solomon Islands ⇒ Ilhas Salomão
+Wallis & Futuna ⇒ Wallis e Futuna
+Great Britain (England, Scotland & Wales) ⇒ Grã-Bretanha (Inglaterra, Escócia e País de Gales)
+England ⇒ Inglaterra
+Scotland ⇒ Escócia
+Wales ⇒ País de Gales
+Ireland & Northern Ireland ⇒ Irlanda e Irlanda do Norte
+Isle of Man ⇒ Ilha de Man
+Guernsey & Jersey ⇒ Guernsey e Jersey
+Azores ⇒ Açores
+Russia ⇒ Rússia
+Mexico ⇒ México
+England & Wales ⇒ Inglaterra e País de Gales
+UK & Ireland ⇒ Reino Unido e Irlanda
+Europe ⇒ Europa
+United States ⇒ Estados Unidos
+Canada ⇒ Canadá
+Mexico & Central America ⇒ México e América Central
+South America ⇒ América do Sul
+Asia ⇒ Ásia
+Africa ⇒ África
+Other ⇒ Outras

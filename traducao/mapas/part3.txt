@@ -1,0 +1,151 @@
+@@ ui/RouteUi.kt
+AVERAGE SPEED CHECK AHEAD ⇒ CONTROLE DE VELOCIDADE MÉDIA À FRENTE
+AVERAGE SPEED CHECK ⇒ CONTROLE DE VELOCIDADE MÉDIA
+Starts in ${Geo.fmtDist(a.toStartM, engine.imperial)} · ${Geo.fmtDist(a.leftM, engine.imperial)} long ⇒ Começa em ${Geo.fmtDist(a.toStartM, engine.imperial)} · ${Geo.fmtDist(a.leftM, engine.imperial)} de extensão
+${Geo.fmtDist(a.leftM, engine.imperial)} left ⇒ faltam ${Geo.fmtDist(a.leftM, engine.imperial)}
+Slow down to bring your average back under ⇒ Reduza para trazer sua média abaixo do limite
+Keep under $sv $unit for the rest ⇒ Fique abaixo de $sv $unit no restante
+Up to ${minOf(sv, lv + 15)} $unit keeps you under ⇒ Até ${minOf(sv, lv + 15)} $unit mantém você abaixo
+avg $unit ⇒ média $unit
+Parking near ${engine.dest?.name ?: "your destination"} ⇒ Estacionamento perto de ${engine.dest?.name ?: "seu destino"}
+Close ⇒ Fechar
+${maxOf(1, Math.round(n.dist / 80.0).toInt())} min walk ⇒ ${maxOf(1, Math.round(n.dist / 80.0).toInt())} min a pé
+No GPS · estimating your position ⇒ Sem GPS · estimando sua posição
+Heading $dir ⇒ Rumo $dir
+Stops on the way ⇒ Paradas no caminho
+Search for a stop to add ⇒ Busque uma parada para adicionar
+Earlier ⇒ Antes
+Later ⇒ Depois
+Remove ⇒ Remover
+Destination ⇒ Destino
+No stops yet. Search above to add one; the route goes through them in this order. ⇒ Nenhuma parada ainda. Busque acima para adicionar; a rota passa por elas nesta ordem.
+Update route ⇒ Atualizar rota
+Cancel ⇒ Cancelar
+Goes into  ⇒ Passa por
+. A charge may apply. ⇒ . Pode haver cobrança.
+Avoid zones ⇒ Evitar zonas
+Arrive by ⇒ Chegar até
+Tomorrow 9:00 ⇒ Amanhã 9:00
+Horizon Nav works out when to leave with the traffic expected then, checks again half an hour before, and reminds you 10 minutes before and when it's time to go (while the app is open). ⇒ O Horizon Nav calcula quando sair com o trânsito previsto para o horário, confere de novo meia hora antes e avisa você 10 minutos antes e na hora de sair (com o app aberto).
+Plan it ⇒ Planejar
+Time to leave for ${p.dest.name} ⇒ Hora de sair para ${p.dest.name}
+Leave by ${f.format(java.util.Date(p.leaveBy))} for ${p.dest.name} ⇒ Saia até ${f.format(java.util.Date(p.leaveBy))} para ${p.dest.name}
+Arrive by ${f.format(java.util.Date(p.arriveBy))} ⇒ Chegada até ${f.format(java.util.Date(p.arriveBy))}
+ · in $mins min ⇒  · em $mins min
+Go ⇒ Ir
+Charging stop ⇒ Parada para recarga
+Fuel stop ⇒ Parada para abastecer
+ in ⇒  à frente
+Add stop ⇒ Adicionar parada
+now ⇒ agora
+in  ⇒ em
+next 2 mi ⇒ próximas 2 mi
+next 3 km ⇒ próximos 3 km
+New map data for $name ⇒ Novos dados de mapa para $name
+ (+$more more) ⇒  (+$more)
+Only what's changed downloads ⇒ Só o que mudou é baixado
+Only what's changed downloads · best on Wi-Fi ⇒ Só o que mudou é baixado · melhor no Wi-Fi
+Update ⇒ Atualizar
+Offline map is $months months old ⇒ O mapa offline tem $months meses
+Update it now for new roads and junctions ⇒ Atualize agora para receber vias e cruzamentos novos
+Update on Wi-Fi for new roads and junctions ⇒ Atualize no Wi-Fi para receber vias e cruzamentos novos
+Horizon Nav ${u.version} is available ⇒ Horizon Nav ${u.version} disponível
+Update now: your settings and places are kept ⇒ Atualize agora: suas configurações e locais são mantidos
+Save this place ⇒ Salvar este local
+Add a place ⇒ Adicionar um local
+Name, e.g. Mum's, Gym, Office 2 ⇒ Nome, ex.: Casa da mãe, Academia
+Change ⇒ Mudar
+Search for the address or postcode ⇒ Busque o endereço ou CEP
+Save ⇒ Salvar
+Saved as ${label.trim().ifBlank { p.name }} ⇒ Salvo como ${label.trim().ifBlank { p.name }}
+Add your Mapbox key ⇒ Adicione sua chave da Mapbox
+Horizon Nav now draws its map with Mapbox. Your free Mapbox key adds the 3D map with buildings, trees and lane markings,  ⇒ O Horizon Nav agora desenha o mapa com a Mapbox. Sua chave gratuita da Mapbox libera o mapa 3D com prédios, árvores e faixas,
+live traffic on your route, and better search and speed limits. ⇒ o trânsito ao vivo na sua rota e uma busca e limites de velocidade melhores.
+Get it at account.mapbox.com › Tokens: copy the Default public token (it starts pk.). ⇒ Pegue em account.mapbox.com › Tokens: copie o Default public token (começa com pk.).
+Mapbox access token (pk.…) ⇒ Token de acesso da Mapbox (pk.…)
+That's a secret token: use the public one (pk.) here. ⇒ Esse é um token secreto: use o público (pk.) aqui.
+That doesn't look like a whole token yet: it's a long code starting pk. ⇒ Isso ainda não parece um token completo: é um código longo que começa com pk.
+Without it the map stays blank, but routes and search still work from your offline pack. ⇒ Sem ela o mapa fica em branco, mas as rotas e a busca ainda funcionam com o pacote offline.
+
+@@ ui/ImmersiveNav.kt
+Say a destination or a command ⇒ Diga um destino ou um comando
+Voice search ⇒ Busca por voz
+Map options ⇒ Opções do mapa
+Settings ⇒ Configurações
+Sound ⇒ Som
+Route overview ⇒ Visão geral da rota
+Demo drive ⇒ Direção de demonstração
+Zoom in ⇒ Aproximar
+Zoom out ⇒ Afastar
+Re-centre ⇒ Recentralizar
+Faster route found ⇒ Rota mais rápida encontrada
+Saves about ${fr.savedMin} min ⇒ Economiza cerca de ${fr.savedMin} min
+Switch ⇒ Trocar
+Keep ⇒ Manter
+Close ⇒ Fechar
+Find along the route ⇒ Buscar ao longo da rota
+Find nearby ⇒ Buscar por perto
+Fuel ⇒ Combustível
+Charging ⇒ Recarga
+Food ⇒ Comida
+Coffee ⇒ Café
+Toilets ⇒ Banheiros
+Parking ⇒ Estacionamento
+Services ⇒ Pontos de parada
+Park at end ⇒ Estacionar no destino
+This trip ⇒ Esta viagem
+Add stop ⇒ Adicionar parada
+Stops ⇒ Paradas
+Avoid road ⇒ Evitar via
+Overview ⇒ Visão geral
+Share ETA ⇒ Compartilhar chegada
+Report here ⇒ Relatar aqui
+Police ⇒ Polícia
+Accident ⇒ Acidente
+Hazard ⇒ Perigo
+Breakdown ⇒ Veículo parado
+Mobile cam ⇒ Radar móvel
+Map ⇒ Mapa
+Live traffic ⇒ Trânsito ao vivo
+Satellite ⇒ Satélite
+3D buildings ⇒ Prédios 3D
+Traffic lights ⇒ Semáforos
+Cameras & roadworks ⇒ Radares e obras
+Street lamps ⇒ Postes de luz
+Trees in parks ⇒ Árvores nos parques
+Footpaths and trails ⇒ Calçadas e trilhas
+Rain radar ⇒ Radar de chuva
+Weather effects ⇒ Efeitos de clima
+Speed camera ⇒ Radar
++${e.delayMin} min traffic ⇒ +${e.delayMin} min de trânsito
+time left ⇒ restante
+to go ⇒ a percorrer
+End route ⇒ Encerrar rota
+Tap the mic to search while driving ⇒ Toque no microfone para buscar dirigindo
+Where to? ⇒ Para onde?
+Clear ⇒ Limpar
+Hide saved and recent ⇒ Ocultar salvos e recentes
+Show saved and recent ⇒ Mostrar salvos e recentes
+Home ⇒ Casa
+Set home ⇒ Definir casa
+Search for your home address ⇒ Busque o endereço da sua casa
+Work ⇒ Trabalho
+Set work ⇒ Definir trabalho
+Search for your work address ⇒ Busque o endereço do seu trabalho
+Add place ⇒ Adicionar local
+Add ⇒ Adicionar
+Resume trip to ${rp.name} ⇒ Retomar viagem para ${rp.name}
+You hadn't arrived when the app closed ⇒ Você ainda não tinha chegado quando o app fechou
+Dismiss ⇒ Dispensar
+Arrive about  ⇒ Chegada por volta de
+$arrive · +${pr.delayMin} min delays ⇒ $arrive · +${pr.delayMin} min de atraso
+Go ⇒ Ir
+Going to ${suggestion.name}? ⇒ Indo para ${suggestion.name}?
+SAVED & RECENT ⇒ SALVOS E RECENTES
+Removed from favourites ⇒ Removido dos favoritos
+Removed from recent places ⇒ Removido dos locais recentes
+Your route ⇒ Sua rota
+${rows.size} ${if (rows.size == 1) "step" else "steps"} ⇒ ${rows.size} ${if (rows.size == 1) "passo" else "passos"}
+ · arrive  ⇒  · chegada
+about  ⇒ por volta de
+Avoid ${row.road} ⇒ Evitar ${row.road}

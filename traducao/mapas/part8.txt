@@ -1,0 +1,48 @@
+@@ car/CarNav.kt
+Destination ⇒ Destino
+From Google Assistant ⇒ Do Google Assistente
+Couldn't read a place from that ⇒ Não foi possível entender um local a partir disso
+Navigating to ${e.dest?.name ?: "your destination"} ⇒ Navegando para ${e.dest?.name ?: "seu destino"}
+Start ⇒ Iniciar
+Next route ⇒ Próxima rota
+Cancel ⇒ Cancelar
+Switch −${fr.savedMin} min ⇒ Trocar −${fr.savedMin} min
+Keep ⇒ Manter
+Stop ⇒ Parar
+Demo ⇒ Demonstração
+Faster ⇒ Mais rápido
+End demo ⇒ Encerrar demo
+Search ⇒ Buscar
+Places ⇒ Locais
+Take exit ${t.exit} ⇒ Pegue a ${t.exit}ª saída
+Arrive ⇒ Chegada
+Starting the map… ⇒ Iniciando o mapa…
+No saved or recent places yet ⇒ Nenhum local salvo ou recente ainda
+Home ⇒ Casa
+Work ⇒ Trabalho
+Type a place, address or postcode ⇒ Digite um local, endereço ou CEP
+Searching… ⇒ Buscando…
+Search for a place ⇒ Buscar um local
+Fuel ⇒ Combustível
+Charging ⇒ Recarga
+Food ⇒ Comida
+Coffee ⇒ Café
+Parking ⇒ Estacionamento
+Nearby ⇒ Por perto
+Nothing found nearby ⇒ Nada encontrado por perto
+Voice guidance ⇒ Orientação por voz
+All directions and alerts ⇒ Todas as direções e alertas
+Alerts only (cameras, limits, hazards) ⇒ Só alertas (radares, limites, perigos)
+Off ⇒ Desligado
+Day and night ⇒ Dia e noite
+Always day ⇒ Sempre dia
+Always night ⇒ Sempre noite
+Follows the car ⇒ Segue o carro
+Avoid motorways ⇒ Evitar rodovias
+Avoid toll roads ⇒ Evitar pedágios
+Speed cameras ⇒ Radares
+Show and warn ⇒ Mostrar e avisar
+Traffic lights ⇒ Semáforos
+On your route ⇒ Na sua rota
+Avoid ferries ⇒ Evitar balsas
+Settings ⇒ Configurações

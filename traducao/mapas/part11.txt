@@ -1,0 +1,40 @@
+@@ RouteExtras.kt
+E ⇒ L
+SW ⇒ SO
+W ⇒ O
+NW ⇒ NO
+
+@@ OfflineRouter.kt
+Already have $name ⇒ Já baixado: $name
+Downloading $name… ⇒ Baixando $name…
+Downloading $name… ${done / 1_048_576} MB ⇒ Baixando $name… ${done / 1_048_576} MB
+ of ${total / 1_048_576} MB ⇒  de ${total / 1_048_576} MB
+Joining $name… ⇒ Juntando $name…
+No places.tsv: streets and shops will not be searchable offline ⇒ Sem places.tsv: ruas e lojas não poderão ser buscadas offline
+No map.pmtiles in this pack ⇒ Sem map.pmtiles neste pacote
+No postcodes.tsv in this pack ⇒ Sem postcodes.tsv neste pacote
+No addresses.tsv: house numbers will not be searchable offline ⇒ Sem addresses.tsv: números de casas não poderão ser buscados offline
+Search index ready ⇒ Índice de busca pronto
+No lamps.tsv: night map will use estimated lamps ⇒ Sem lamps.tsv: o mapa noturno vai usar postes estimados
+No signals.tsv: traffic lights will be fetched online instead ⇒ Sem signals.tsv: os semáforos serão buscados online
+No $name yet: ${if (name == "limits.bin") "speed limits" else "speed cameras"} will be looked up online ⇒ Ainda sem $name: ${if (name == "limits.bin") "os limites de velocidade" else "os radares"} serão consultados online
+Download finished ⇒ Download concluído
+Postcode · offline ⇒ CEP · offline
+Address ⇒ Endereço
+
+@@ Zones.kt
+No zones found in the map data ⇒ Nenhuma zona encontrada nos dados do mapa
+${out.size} zones:  ⇒ ${out.size} zonas: 
+Zone download failed:  ⇒ O download das zonas falhou: 
+
+@@ Store.kt
+Home ⇒ Casa
+Work ⇒ Trabalho
+
+@@ NavService.kt
+Navigating ⇒ Navegando
+Navigation ⇒ Navegação
+Shown while a route is running ⇒ Aparece enquanto uma rota está ativa
+
+@@ Extras.kt
+Usually around %02d:%02d ⇒ Normalmente por volta de %02d:%02d

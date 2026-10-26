@@ -1,0 +1,141 @@
+@@ ui/CarOverlay.kt
+Where to? ⇒ Para onde?
+Speed camera ⇒ Radar
+Faster route found ⇒ Rota mais rápida encontrada
+Saves about ${fr.savedMin} min ⇒ Economiza cerca de ${fr.savedMin} min
+Switch ⇒ Trocar
+Keep ⇒ Manter
+Sound on ⇒ Som ligado
+Alerts only ⇒ Só alertas
+Muted ⇒ Mudo
+time left ⇒ restante
+to go ⇒ a percorrer
++${e.delayMin} min traffic ⇒ +${e.delayMin} min de trânsito
+Destination ⇒ Destino
+Fastest ⇒ Mais rápida
+Shortest ⇒ Mais curta
+Alternative ⇒ Alternativa
+${Geo.fmtDist(r.len, engine.imperial)} · arrive ${fmt.format(java.util.Date(baseMs + (r.time * 1000).toLong()))} ⇒ ${Geo.fmtDist(r.len, engine.imperial)} · chegada ${fmt.format(java.util.Date(baseMs + (r.time * 1000).toLong()))}
++$delayMin min traffic ⇒ +$delayMin min de trânsito
+No delays ⇒ Sem atrasos
+Start navigation ⇒ Iniciar navegação
+Starting in ${kotlin.math.ceil((1f - progress.value) * 10f).toInt()} s ⇒ Iniciando em ${kotlin.math.ceil((1f - progress.value) * 10f).toInt()} s
+Home ⇒ Casa
+Set home ⇒ Definir casa
+Work ⇒ Trabalho
+Set work ⇒ Definir trabalho
+Saved & recent ⇒ Salvos e recentes
+Fuel ⇒ Combustível
+Charging ⇒ Recarga
+Food ⇒ Comida
+Coffee ⇒ Café
+Parking ⇒ Estacionamento
+Settings ⇒ Configurações
+
+@@ ui/NavPage.kt
+Charging about  ⇒ Recarga aprox.
+Fuel about  ⇒ Combustível aprox.
+Weather on route ⇒ Clima na rota
+in ${if (w.minutes >= 60) "${w.minutes / 60} h ${w.minutes % 60} min" else "${w.minutes} min"} ⇒ em ${if (w.minutes >= 60) "${w.minutes / 60} h ${w.minutes % 60} min" else "${w.minutes} min"}
+Stops ⇒ Paradas
++ Fuel ⇒ + Combustível
++ Charger ⇒ + Carregador
++ Stop ⇒ + Parada
+Edit stops ⇒ Editar paradas
+Leave ⇒ Sair
+Now ⇒ Agora
+Arrive by… ⇒ Chegar até…
+Destination ⇒ Destino
+Favourite ⇒ Favorito
+Saved to favourites ⇒ Salvo nos favoritos
+Removed from favourites ⇒ Removido dos favoritos
+Set as home ⇒ Definir como casa
+Home set to ${d.name} ⇒ Casa definida: ${d.name}
+Set as work ⇒ Definir como trabalho
+Work set to ${d.name} ⇒ Trabalho definido: ${d.name}
+Save with a name ⇒ Salvar com um nome
+Fastest ⇒ Mais rápida
+Shortest ⇒ Mais curta
+Alternative ⇒ Alternativa
+${Geo.fmtDist(r.len, engine.imperial)} · arrive ${fmt.format(java.util.Date(baseMs + (r.time * 1000).toLong()))} ⇒ ${Geo.fmtDist(r.len, engine.imperial)} · chegada ${fmt.format(java.util.Date(baseMs + (r.time * 1000).toLong()))}
++$delayMin min traffic ⇒ +$delayMin min de trânsito
+No delays ⇒ Sem atrasos
+Start navigation ⇒ Iniciar navegação
+Planned for later ⇒ Planejada para depois
+Starting in ${kotlin.math.ceil((1f - progress.value) * 10f).toInt()} s ⇒ Iniciando em ${kotlin.math.ceil((1f - progress.value) * 10f).toInt()} s
+Flying… ⇒ Sobrevoando…
+Fly over route ⇒ Sobrevoar a rota
+You've arrived ⇒ Você chegou
+On the ${a.side} ⇒ Do lado ${if (a.side == "left") "esquerdo" else "direito"}
+Nearest parking ⇒ Estacionamento mais próximo
+Go ⇒ Ir
+Saved ⇒ Salvo
+Save place ⇒ Salvar local
+Route back ⇒ Rota de volta
+Done ⇒ Concluir
+Fuel stations ⇒ Postos de combustível
+Charging points ⇒ Pontos de recarga
+Food ⇒ Comida
+Coffee ⇒ Café
+Toilets ⇒ Banheiros
+Services ⇒ Pontos de parada
+Car parks ⇒ Estacionamentos
+Add a stop:  ⇒ Adicionar parada:
+ ahead ⇒  à frente
+Close ⇒ Fechar
+Soonest ⇒ Mais próximos na rota
+Nearest ⇒ Mais próximos
+Cheapest ⇒ Mais baratos
+
+@@ ui/OfflineMapsPage.kt
+Mapbox map with no signal ⇒ Mapa Mapbox sem sinal
+Mapbox lets each device keep only limited offline areas: a radius round home and several routes fit, a whole country doesn't. Areas you've driven recently are also kept automatically. ⇒ A Mapbox deixa cada aparelho guardar só áreas offline limitadas: cabe um raio ao redor de casa e várias rotas, mas não um país inteiro. As áreas por onde você dirigiu recentemente também ficam guardadas automaticamente.
+Add your Mapbox access token in Search & keys first. ⇒ Adicione primeiro o seu token da Mapbox em Busca e chaves.
+Around home ⇒ Arredores de casa
+Set Home first (Search, then save a place as Home) ⇒ Defina Casa primeiro (busque e salve um local como Casa)
+The 3D map within $km km of Home · about ${off.homeMb(km)} MB ⇒ O mapa 3D num raio de $km km de Casa · cerca de ${off.homeMb(km)} MB
+Saving… ⇒ Salvando…
+Save ⇒ Salvar
+Save the map for this route ⇒ Salvar o mapa desta rota
+Plan a route first ⇒ Planeje uma rota primeiro
+ · a strip along the route · about ${off.routeMb(r.len)} MB ⇒  · uma faixa ao longo da rota · cerca de ${off.routeMb(r.len)} MB
+Save every route's map ⇒ Salvar o mapa de toda rota
+When a route starts, its strip is saved in the background ⇒ Quando uma rota começa, a faixa dela é salva em segundo plano
+Save routes ⇒ Salvar rotas
+On Wi-Fi only ⇒ Só no Wi-Fi
+Always (uses mobile data) ⇒ Sempre (usa dados móveis)
+Saved ⇒ Salvos
+ · saved ⇒  · salvo
+ · part saved ⇒  · salvo em parte
+Yes, delete ⇒ Sim, apagar
+Keep ⇒ Manter
+Delete ⇒ Apagar
+Stop ⇒ Parar
+Downloaded areas ⇒ Regiões baixadas
+Keep as many areas as you like: the one you're in is used automatically (routes work offline within one area). Each is a snapshot of the roads on the day it was built, so update now and then. ⇒ Guarde quantas regiões quiser: a região onde você está é usada automaticamente (as rotas funcionam offline dentro de uma região). Cada uma é um retrato das vias no dia em que foi gerada, então atualize de vez em quando.
+Nothing downloaded yet. Pick an area below and download it on Wi-Fi. ⇒ Nada baixado ainda. Escolha uma região abaixo e baixe no Wi-Fi.
+ · in use ⇒  · em uso
+ · built $built ⇒  · gerado em $built
+ · speed limits and cameras offline ⇒  · limites de velocidade e radares offline
+Use ⇒ Usar
+Updating… ⇒ Atualizando…
+Update ⇒ Atualizar
+Offline speed limits and cameras are now ready for ${PackRegions.byId(id).name}: tap its Update (only the new files download, usually under 100 MB). ⇒ Limites de velocidade e radares offline já estão prontos para ${PackRegions.byId(id).name}: toque em Atualizar (só os arquivos novos são baixados, normalmente menos de 100 MB).
+The area in use is about ${age / 30} months old. Update it on Wi-Fi to pick up new roads and junction changes. ⇒ A região em uso tem cerca de ${age / 30} meses. Atualize no Wi-Fi para receber vias novas e mudanças em cruzamentos.
+Add an area ⇒ Adicionar região
+Area ⇒ Região
+Change ⇒ Mudar
+The ${region.name} pack hasn't been built yet, so it can't be downloaded at the moment. ⇒ O pacote ${region.name} ainda não foi gerado, então não pode ser baixado agora.
+${region.name} is already downloaded ⇒ ${region.name} já está baixado
+Download ${region.name} ⇒ Baixar ${region.name}
+Best done on Wi-Fi: a country is usually 1 to 4 GB ⇒ Melhor no Wi-Fi: um país costuma ter de 1 a 4 GB
+Downloading… ⇒ Baixando…
+Download ⇒ Baixar
+ · you can leave this page ⇒  · você pode sair desta página
+Without signal ⇒ Sem sinal
+Which map to draw ⇒ Qual mapa desenhar
+Auto ⇒ Automático
+Downloaded ⇒ Baixado
+Online ⇒ Online
+Auto: with no signal Mapbox's map carries on with the areas it has stored (where you've been recently, and saved Mapbox areas); the downloaded pack's map takes over only where Mapbox has nothing, and the online map comes back with signal ⇒ Automático: sem sinal, o mapa da Mapbox continua com as áreas que tem guardadas (onde você esteve recentemente e as áreas salvas da Mapbox); o mapa do pacote baixado só assume onde a Mapbox não tem nada, e o mapa online volta quando o sinal volta
+

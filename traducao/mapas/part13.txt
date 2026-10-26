@@ -1,0 +1,35 @@
+@@ MapBinding.kt
+waiting for the map ⇒ aguardando o mapa
+zoom in closer to see them ⇒ aproxime mais para vê-los
+no streets read from the map here yet ⇒ nenhuma rua lida do mapa aqui ainda
+none here ⇒ nenhum aqui
+${kept.size} shown (${near.size} mapped, $placedOnRoads placed along the streets) ⇒ ${kept.size} mostrados (${near.size} mapeados, $placedOnRoads posicionados ao longo das ruas)
+${kept.size} shown, from your offline pack ⇒ ${kept.size} mostrados, do seu pacote offline
+${kept.size} placed along the streets (your offline pack has no lamp list) ⇒ ${kept.size} posicionados ao longo das ruas (seu pacote offline não tem lista de postes)
+${kept.size} placed along the streets (none mapped here) ⇒ ${kept.size} posicionados ao longo das ruas (nenhum mapeado aqui)
+not started ⇒ não iniciado
+no route (lights only show on your route) ⇒ sem rota (os semáforos só aparecem na sua rota)
+$onR on the drawn route, ${signalPts.size} found along it ⇒ $onR na rota desenhada, ${signalPts.size} encontrados ao longo dela
+, last error: $signalErr ⇒ , último erro: $signalErr
+, status: $signalStage ⇒ , status: $signalStage
+$onR shown/${signalPts.size} found ⇒ $onR mostrados/${signalPts.size} encontrados
+finding lights along the route… ⇒ procurando semáforos ao longo da rota…
+finding lights along the route ($n of ${chunks.size})… ⇒ procurando semáforos ao longo da rota ($n de ${chunks.size})…
+route searched (${if (usedPack) "downloaded area" else Overpass.lastNote}) ⇒ rota pesquisada (${if (usedPack) "região baixada" else Overpass.lastNote})
+some of the route couldn't be searched, will retry ⇒ parte da rota não pôde ser pesquisada, vai tentar de novo
+${-diff} min faster ⇒ ${-diff} min mais rápida
+$diff min slower ⇒ $diff min mais lenta
+Same time ⇒ Mesmo tempo
+Less traffic ⇒ Menos trânsito
+More traffic ⇒ Mais trânsito
+Similar traffic ⇒ Trânsito parecido
+no route ⇒ sem rota
+
+@@ FuelFinder.kt
+Super unleaded ⇒ Gasolina aditivada
+Electric ⇒ Elétrico
+Unleaded ⇒ Gasolina comum
+
+@@ NavEngine.kt
+no route found ⇒ nenhuma rota encontrada
+unknown error ⇒ erro desconhecido
