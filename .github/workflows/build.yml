@@ -1,4 +1,5 @@
 name: Build Horizon Nav BR
+# (no celular: Actions > menu "All workflows" > Build Horizon Nav BR > Run workflow)
 # Builds the app from HorizonNav.zip on every push to main (and from the Actions tab), signs it with our own key and
 # puts the APK on this repo's "app" release, so the download link below always gives the newest version and the app's own
 # update check finds it:
