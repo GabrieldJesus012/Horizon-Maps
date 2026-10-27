@@ -233,3 +233,129 @@ PATCHES.setdefault('ui/SettingsKit.kt', []).append((
             }
         }
     }'''))
+
+# ---- Brazilian fuels and trip cost in reais (km/l, R$/litro) instead of UK miles per gallon, pence and pounds ----
+_ss = open(os.path.join(root, 'ui/SettingsScreen.kt'), encoding='utf-8').read()
+_fa = _ss.index('private fun FuelSection(prefs: Prefs) {')
+_fb = _ss.index('    SGroup("Compartilhar sua chegada"', _fa)
+FUEL_NEW = r'''private fun FuelSection(prefs: Prefs) {
+    val fuel = prefs.s("fueltype", "GAS")
+    fun num(s: String, n: Int) = s.replace(',', '.').filter { it.isDigit() || it == '.' }.take(n)
+    SGroup("Combustível") {
+        SChoice("Seu combustível", listOf("GAS" to "Gasolina", "GASAD" to "Aditivada", "ETANOL" to "Etanol", "B7" to "Diesel", "GNV" to "GNV", "EV" to "Elétrico"), fuel) { prefs.put("fueltype", it) }
+        SToggle(prefs, "Sugerir parada para abastecer em viagens longas", "smartfuel", true,
+            if (fuel == "EV") "Acima de uns 150 km, um ponto de recarga no caminho com o menor desvio" else "Acima de uns 150 km, um posto no caminho com o menor desvio")
+    }
+    if (fuel == "EV") SGroup("Custo da viagem nas opções de rota", footer = "Com os dois preenchidos, cada rota mostra mais ou menos quanto vai custar a recarga, em reais.") {
+        SFieldItem("Consumo (km por kWh)", prefs.s("evkmkwh", ""), placeholder = "ex.: 6,5", number = true) { s -> prefs.put("evkmkwh", num(s, 5)) }
+        SFieldItem("Preço da energia (R$ por kWh)", prefs.s("evrkwh", ""), placeholder = "ex.: 0,95", number = true) { s -> prefs.put("evrkwh", num(s, 6)) }
+    } else {
+        SGroup("Custo da viagem nas opções de rota", footer = "Com o consumo e o preço preenchidos, cada rota mostra mais ou menos quanto vai gastar de combustível, em reais. Se o preço ficar em branco, vale o preço da gasolina ou do etanol informado abaixo.") {
+            SFieldItem("Consumo do carro (km/l)", prefs.s("brkml", ""), placeholder = "ex.: 12,5", number = true) { s -> prefs.put("brkml", num(s, 5)) }
+            SFieldItem("Preço do combustível (R$/litro)", prefs.s("brppl", ""), placeholder = "ex.: 6,29", number = true) { s -> prefs.put("brppl", num(s, 6)) }
+        }
+        SGroup("Etanol ou gasolina?", footer = "Regra prática: o etanol compensa quando custa até 70% do preço da gasolina, porque rende cerca de 30% menos. Com o consumo do seu carro em cada um, a conta usa os números reais.") {
+            SFieldItem("Preço da gasolina (R$/litro)", prefs.s("brgas", ""), placeholder = "ex.: 6,29", number = true) { s -> prefs.put("brgas", num(s, 6)) }
+            SFieldItem("Preço do etanol (R$/litro)", prefs.s("bretanol", ""), placeholder = "ex.: 4,19", number = true) { s -> prefs.put("bretanol", num(s, 6)) }
+            SFieldItem("Consumo com gasolina (km/l, opcional)", prefs.s("brkmlg", ""), placeholder = "ex.: 12,0", number = true) { s -> prefs.put("brkmlg", num(s, 5)) }
+            SFieldItem("Consumo com etanol (km/l, opcional)", prefs.s("brkmle", ""), placeholder = "ex.: 8,5", number = true) { s -> prefs.put("brkmle", num(s, 5)) }
+            etanolAdvice(prefs)?.let { SNote(it) }
+        }
+    }
+'''
+PATCHES['ui/SettingsScreen.kt'].append((_ss[_fa:_fb], FUEL_NEW))
+
+PATCHES.setdefault('ui/Shared.kt', []).append((
+'''fun isImperial(prefs: Prefs): Boolean =''',
+'''/** The pump price to use for the trip cost: the one typed for it, or else the petrol or ethanol price from "Etanol ou gasolina?". */
+internal fun brFuelPrice(prefs: Prefs): Double? {
+    fun d(k: String) = prefs.s(k, "").replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }
+    val fuel = prefs.s("fueltype", "GAS")
+    if (fuel == "EV") return d("evrkwh")
+    return d("brppl") ?: when (fuel) { "ETANOL" -> d("bretanol"); "GAS", "GASAD" -> d("brgas"); else -> null }
+}
+
+/** Which pays off, ethanol or petrol: by cost per km when both consumptions are known, otherwise by the 70% rule. */
+internal fun etanolAdvice(prefs: Prefs): String? {
+    fun d(k: String) = prefs.s(k, "").replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }
+    val g = d("brgas") ?: return null
+    val e = d("bretanol") ?: return null
+    val kg = d("brkmlg"); val ke = d("brkmle")
+    val br = java.text.NumberFormat.getCurrencyInstance(java.util.Locale("pt", "BR"))
+    if (kg != null && ke != null) {
+        val cg = g / kg * 100.0; val ce = e / ke * 100.0
+        return (if (ce < cg) "Etanol compensa" else "Gasolina compensa") + ": a cada 100 km, gasolina sai " + br.format(cg) + " e etanol " + br.format(ce) + "."
+    }
+    val pct = Math.round(e / g * 100.0)
+    return if (e / g <= 0.70) "Etanol compensa: custa $pct% do preço da gasolina (até 70% compensa)."
+    else "Gasolina compensa: o etanol custa $pct% do preço dela (acima de 70%)."
+}
+
+fun isImperial(prefs: Prefs): Boolean ='''))
+
+PATCHES.setdefault('ui/NavPage.kt', []).append((
+'''    val ev = engine.prefs.s("fueltype", "E10") == "EV"
+    val mpg = engine.prefs.s(if (ev) "evmpk" else "fuelmpg", "").toDoubleOrNull()?.takeIf { it > 0 }
+    val ppl = engine.prefs.s(if (ev) "evppk" else "fuelppl", "").toDoubleOrNull()?.takeIf { it > 0 }
+    val costText = if (mpg != null && ppl != null && selRoute != null)
+        (if (ev) "Recarga aprox. " else "Combustível aprox. ") + java.text.NumberFormat.getCurrencyInstance(java.util.Locale.UK).format(
+            if (ev) selRoute.len / 1609.344 / mpg * ppl / 100.0 else selRoute.len / 1609.344 / mpg * 4.54609 * ppl / 100.0) else null''',
+'''    val ev = engine.prefs.s("fueltype", "GAS") == "EV"
+    val kmPer = engine.prefs.s(if (ev) "evkmkwh" else "brkml", "").replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }
+    val price = brFuelPrice(engine.prefs)
+    val costText = if (kmPer != null && price != null && selRoute != null)
+        (if (ev) "Recarga aprox. " else "Combustível aprox. ") + java.text.NumberFormat.getCurrencyInstance(java.util.Locale("pt", "BR")).format(
+            selRoute.len / 1000.0 / kmPer * price) else null'''))
+
+PATCHES.setdefault('FuelFinder.kt', []).append((
+'''    fun fuelName(fuel: String) = when (fuel) { "E5" -> "Gasolina aditivada"; "B7" -> "Diesel"; "EV" -> "Elétrico"; else -> "Gasolina comum" }''',
+'''    fun fuelName(fuel: String) = when (fuel) { "GASAD", "E5" -> "Gasolina aditivada"; "ETANOL" -> "Etanol"; "B7" -> "Diesel"; "GNV" -> "GNV"; "EV" -> "Elétrico"; else -> "Gasolina" }'''))
+
+# ---- UK-only features out of the way: clean air zones (ULEZ), British-style signs ----
+PATCHES['ui/SettingsScreen.kt'].extend([
+    ('''        SToggle(prefs, "Evitar zonas de ar limpo (Reino Unido)", "avoidzones", false, "Uma zona onde você começa ou termina não pode ser evitada")\n''', ''),
+    ('''        SToggle(prefs, "Placas no estilo britânico no cartão de manobra", "uksigns", true)\n''', ''),
+    ('''        SToggle(prefs, "Zonas de ar limpo (Reino Unido)", "zonewarn", true)\n''', ''),
+])
+PATCHES['ui/ImmersiveNav.kt'].append(('@ALL@engine.prefs.b("uksigns", true)', 'engine.prefs.b("uksigns", false)'))
+PATCHES.setdefault('NavEngine.kt', []).append(('@ALL@prefs.b("zonewarn", true)', 'prefs.b("zonewarn", false)'))
+
+PATCHES['ui/SettingsScreen.kt'].append(('''        SToggle(prefs, "Rotas econômicas", "route_eco", false, "Que gastam menos combustível em vez das mais rápidas")
+        ZonesItem()
+''', '''        SToggle(prefs, "Rotas econômicas", "route_eco", false, "Que gastam menos combustível em vez das mais rápidas")
+'''))
+# settings search: drop the removed UK entries, point the fuel ones at the new groups
+PATCHES.setdefault('ui/SettingsIndex.kt', []).extend([
+    ('''    SettingRef("Evitar zonas de ar limpo (Reino Unido)", "Uma zona onde você começa ou termina não pode ser evitada", "Rotas", 1),\n''', ''),
+    ('''    SettingRef("Placas no estilo britânico no cartão de manobra", "", "Na tela", 1),\n''', ''),
+    ('''    SettingRef("Zonas de ar limpo (Reino Unido)", "", "Na via", 2),\n''', ''),
+    ('''    SettingRef("Seu combustível", "", "Preços de combustível", 4),
+    SettingRef("Sugerir parada para abastecer em viagens longas", "Acima de uns 150 km, o posto com melhor custo-benefício no caminho", "Preços de combustível", 4),
+    SettingRef("Client ID", "", "Preços de combustível", 4),
+    SettingRef("Client secret", "", "Preços de combustível", 4),
+    SettingRef("Preços", "", "Preços de combustível", 4),
+    SettingRef("Viu um preço errado?", "", "Preços de combustível", 4),
+    SettingRef("Consumo (milhas por galão)", "", "Custo de combustível nas opções de rota", 4),
+    SettingRef("Preço do combustível (pence por litro)", "", "Custo de combustível nas opções de rota", 4),
+''', '''    SettingRef("Seu combustível", "Gasolina, aditivada, etanol, diesel, GNV ou elétrico", "Combustível", 4),
+    SettingRef("Sugerir parada para abastecer em viagens longas", "Acima de uns 150 km, um posto no caminho com o menor desvio", "Combustível", 4),
+    SettingRef("Consumo do carro (km/l)", "Para o custo da viagem em reais", "Custo da viagem nas opções de rota", 4),
+    SettingRef("Preço do combustível (R$/litro)", "Para o custo da viagem em reais", "Custo da viagem nas opções de rota", 4),
+    SettingRef("Preço da gasolina (R$/litro)", "Etanol ou gasolina: qual compensa", "Etanol ou gasolina?", 4),
+    SettingRef("Preço do etanol (R$/litro)", "Regra dos 70%", "Etanol ou gasolina?", 4),
+'''),
+])
+
+# ---- offline packs copied to our own repo (pacotes-espelho.txt) are downloaded from there ----
+PATCHES.setdefault('PackRegions.kt', []).extend([
+    ('''    val url: String get() = if (id == "ew" || id == "gb") "$RELEASES/pack-$id" else "$COUNTRY_RELEASES/pack-$id"''',
+     '''    val url: String get() = if (mirrored) "$OWN_RELEASES/pack-$id" else if (id == "ew" || id == "gb") "$RELEASES/pack-$id" else "$COUNTRY_RELEASES/pack-$id"
+    /** Packs listed in pacotes-espelho.txt are copied to our own repo's releases and downloaded from there. */
+    val mirrored: Boolean get() = id in MIRRORED_PACKS && BuildConfig.UPDATE_REPO.isNotBlank()'''),
+    ('''    val extrasUrl: String get() = "$COUNTRY_RELEASES/pack-$id"''',
+     '''    val extrasUrl: String get() = if (mirrored) "$OWN_RELEASES/pack-$id" else "$COUNTRY_RELEASES/pack-$id"'''),
+    ('''const val COUNTRY_RELEASES = "https://github.com/benbishop028-arch/Horizon-Maps/releases/download"''',
+     '''const val COUNTRY_RELEASES = "https://github.com/benbishop028-arch/Horizon-Maps/releases/download"
+val OWN_RELEASES: String get() = "https://github.com/${BuildConfig.UPDATE_REPO}/releases/download"
+val MIRRORED_PACKS: Set<String> = BuildConfig.MIRRORED_PACKS.split(',').map { it.trim() }.filter { it.isNotEmpty() }.toSet()'''),
+])

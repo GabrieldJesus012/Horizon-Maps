@@ -1,0 +1,96 @@
+name: Atualizar radares (Pardal)
+# Reforça a lista de radares do pacote offline do Brasil com a base aberta do projeto Pardal
+# (github.com/Murkiriel/pardal, licença ODbL: OpenStreetMap + DNIT + ANTT + Inmetro + órgãos estaduais e municipais).
+# Junta os radares do OpenStreetMap que já vinham no pacote (guardados como cameras_osm.tsv) com os do Pardal,
+# sem repetir os que ficam a menos de 30 m um do outro, e publica o resultado como cameras.tsv na release pack-brazil.
+# O app percebe o arquivo novo e oferece "Atualizar" (só esse arquivo é baixado).
+# Roda todo mês, depois de cada cópia dos pacotes e quando este arquivo muda.
+on:
+  schedule:
+    - cron: "17 9 3 * *"
+  workflow_run:
+    workflows: ["Copiar pacotes offline"]
+    types: [completed]
+  push:
+    branches: [main]
+    paths: [".github/workflows/radares-pardal.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  radares:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: pack-brazil
+    steps:
+      - name: Base do OpenStreetMap (cameras_osm.tsv)
+        run: |
+          set -e
+          mkdir -p w && cd w
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::notice::A release $TAG ainda não existe neste repositório: rode antes 'Copiar pacotes offline'."
+            echo "SKIP=1" >> "$GITHUB_ENV"; exit 0
+          fi
+          # a primeira vez (ou depois de uma cópia nova do pacote) guarda os radares originais do pacote como base
+          if gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern cameras_osm.tsv --clobber 2>/dev/null; then
+            echo "base existente: $(wc -l < cameras_osm.tsv) radares do OpenStreetMap"
+          else
+            gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern cameras.tsv --clobber
+            cp cameras.tsv cameras_osm.tsv
+            gh release upload "$TAG" cameras_osm.tsv --repo "$GITHUB_REPOSITORY" --clobber
+            echo "base criada: $(wc -l < cameras_osm.tsv) radares do OpenStreetMap"
+          fi
+      - name: Juntar com o Pardal
+        if: env.SKIP != '1'
+        working-directory: w
+        run: |
+          set -e
+          curl -fsSL -o pardal.csv https://raw.githubusercontent.com/Murkiriel/pardal/main/brasil/radares.csv
+          python3 - <<'PY'
+          import csv, math
+          def tile(lat, lon):
+              x = min(32767, max(0, int((lon + 180.0) / 360.0 * 32768)))
+              r = math.radians(max(-85.0, min(85.0, lat)))
+              y = min(32767, max(0, int((1.0 - math.log(math.tan(r) + 1.0 / math.cos(r)) / math.pi) / 2.0 * 32768)))
+              return "%05d%05d" % (y, x)
+          grid = {}
+          def near(lat, lon):
+              gy, gx = int(lat / 0.0003), int(lon / 0.0003)
+              for dy in (-1, 0, 1):
+                  for dx in (-1, 0, 1):
+                      for (a, b) in grid.get((gy + dy, gx + dx), ()):
+                          dlat = (a - lat) * 111320.0; dlon = (b - lon) * 111320.0 * math.cos(math.radians(lat))
+                          if dlat * dlat + dlon * dlon < 30.0 * 30.0: return True
+              return False
+          def add(lat, lon):
+              grid.setdefault((int(lat / 0.0003), int(lon / 0.0003)), []).append((lat, lon))
+          out = []
+          with open("cameras_osm.tsv", encoding="utf-8") as f:
+              for line in f:
+                  c = line.rstrip("\n").split("\t")
+                  try: lat, lon = float(c[1]), float(c[2])
+                  except (IndexError, ValueError): continue
+                  d = c[3] if len(c) > 3 else ""
+                  out.append((tile(lat, lon), lat, lon, d)); add(lat, lon)
+          base = len(out); novos = 0; ignorados = 0
+          with open("pardal.csv", encoding="utf-8") as f:
+              for r in csv.DictReader(f):
+                  if str(r.get("active", "1")).strip().lower() not in ("1", "true", "sim", ""): ignorados += 1; continue
+                  if (r.get("kind") or "").upper() not in ("FIXED", "SECTION", "RED_LIGHT"): ignorados += 1; continue
+                  try: lat, lon = float(r["lat"]), float(r["lng"])
+                  except (KeyError, ValueError): ignorados += 1; continue
+                  if near(lat, lon): continue
+                  d = ""
+                  try:
+                      if (r.get("direction_deg") or "").strip(): d = "%g" % (float(r["direction_deg"]) % 360.0)
+                  except ValueError: d = ""
+                  out.append((tile(lat, lon), lat, lon, d)); add(lat, lon); novos += 1
+          out.sort(key=lambda t: t[0])
+          with open("cameras.tsv", "w", encoding="utf-8") as o:
+              for k, lat, lon, d in out: o.write("%s\t%.6f\t%.6f\t%s\n" % (k, lat, lon, d))
+          print(f"OpenStreetMap: {base} · novos do Pardal: {novos} · ignorados (inativos/outros): {ignorados} · total: {len(out)}")
+          PY
+          gh release upload "$TAG" cameras.tsv --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes "Cópia do pacote brazil de benbishop028-arch/Horizon-Maps. Radares reforçados com o Pardal (github.com/Murkiriel/pardal, ODbL: © colaboradores do OpenStreetMap, DNIT, ANTT, Inmetro e órgãos estaduais e municipais) em $(date -u '+%d/%m/%Y')."

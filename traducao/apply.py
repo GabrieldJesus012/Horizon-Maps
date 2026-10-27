@@ -28,6 +28,10 @@ for mf in sys.argv[2:]:
         if ' ⇒ ' not in line:
             print('BAD LINE', mf, repr(line)); continue
         en, pt = line.split(' ⇒ ', 1)
+        # editors strip trailing spaces from the map lines: keep the English key's trailing space on the translation
+        tail = en[len(en.rstrip(' ')):]
+        if tail and not pt.endswith(' '):
+            pt += tail
         if en in cur['map'] and cur['map'][en] != pt:
             print('CONFLICT', en)
         cur['map'][en] = pt

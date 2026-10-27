@@ -8,7 +8,7 @@ name: Build Horizon Nav BR
 on:
   push:
     branches: [main]
-    paths: ["HorizonNav.zip", ".github/workflows/build.yml", "horizon-br.keystore"]
+    paths: ["HorizonNav.zip", ".github/workflows/build.yml", "horizon-br.keystore", "pacotes-espelho.txt"]
   workflow_dispatch:
 permissions:
   contents: write

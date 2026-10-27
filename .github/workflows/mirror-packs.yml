@@ -34,5 +34,7 @@ jobs:
               echo "copiado: $f ($(du -h "dl/$tag/$f" | cut -f1))"
               rm -f "dl/$tag/$f"
             done
+            # a cópia trouxe os radares originais do pacote: a próxima "Atualizar radares (Pardal)" refaz a base a partir deles
+            gh release delete-asset "$tag" cameras_osm.tsv --repo "$GITHUB_REPOSITORY" -y 2>/dev/null || true
             echo "::endgroup::"
           done

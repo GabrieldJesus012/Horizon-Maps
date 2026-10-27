@@ -8,7 +8,7 @@ Voice, cameras and warnings ⇒ Voz, radares e avisos
 Places & trips ⇒ Locais e viagens
 Home, work, favourites, trip log ⇒ Casa, trabalho, favoritos, histórico de viagens
 Fuel & sharing ⇒ Combustível e compartilhamento
-Fuel prices, cost, share ETA ⇒ Preços de combustível, custo, compartilhar chegada
+Fuel prices, cost, share ETA ⇒ Combustível, custo em reais, etanol x gasolina, compartilhar chegada
 Offline maps ⇒ Mapas offline
 Maps and routes with no signal ⇒ Mapas e rotas sem sinal
 Display ⇒ Tela

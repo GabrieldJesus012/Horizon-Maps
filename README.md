@@ -40,3 +40,18 @@ Cada mudança enviada para este repositório gera um APK novo no mesmo link. O p
 
 A interface, as mensagens e a voz de navegação estão em português. A pasta `traducao/` guarda as ferramentas e os mapas de
 tradução (`inglês ⇒ português`), para reaplicar tudo quando o autor publicar uma versão nova: `traducao/aplicar.sh <pasta do projeto original>`.
+
+## Mapas offline e radares
+
+- **Pacote do Brasil copiado para cá:** o workflow "Copiar pacotes offline" copia os pacotes listados em `pacotes-espelho.txt`
+  das releases do autor para as releases deste repositório, e o app baixa esses pacotes daqui. Para copiar outro país,
+  acrescente o nome numa linha (ex.: `portugal`).
+- **Radares reforçados:** o workflow "Atualizar radares (Pardal)" junta, todo mês, os radares do OpenStreetMap com a base
+  aberta do [Pardal](https://github.com/Murkiriel/pardal) e publica o resultado no pacote do Brasil.
+  Dados de radares: ODbL, © colaboradores do OpenStreetMap, DNIT, ANTT, Inmetro e órgãos estaduais e municipais (via Pardal).
+  A sinalização da via sempre prevalece.
+
+## Combustível
+
+Em Configurações → Combustível: gasolina, aditivada, etanol, diesel, GNV ou elétrico; custo da viagem em reais
+(km/l e R$/litro) nas opções de rota; e "Etanol ou gasolina?", com a regra dos 70% ou o consumo real do seu carro.
