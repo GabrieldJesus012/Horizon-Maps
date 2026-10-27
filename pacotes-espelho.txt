@@ -1,0 +1,2 @@
+# Pacotes offline copiados para as releases deste repositório (um por linha, nome como no app: brazil, portugal, argentina...)
+brazil

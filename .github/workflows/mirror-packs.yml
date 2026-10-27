@@ -1,0 +1,38 @@
+name: Copiar pacotes offline
+# Copia os pacotes offline listados em pacotes-espelho.txt (um por linha, ex.: brazil) das releases do autor
+# (benbishop028-arch/Horizon-Maps, release pack-<nome>) para as releases deste repositório, com o mesmo nome.
+# Assim o app baixa os mapas offline daqui e não depende do repositório do autor continuar público.
+# Roda sozinho quando pacotes-espelho.txt muda; para atualizar a cópia, use Actions > Copiar pacotes offline > Run workflow.
+on:
+  push:
+    branches: [main]
+    paths: ["pacotes-espelho.txt", ".github/workflows/mirror-packs.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  mirror:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Copiar cada pacote
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SRC: benbishop028-arch/Horizon-Maps
+        run: |
+          set -e
+          grep -v '^\s*#' pacotes-espelho.txt | tr -d ' \r' | grep -v '^$' | while read -r name; do
+            tag="pack-$name"
+            echo "::group::$tag"
+            mkdir -p "dl/$tag"
+            # baixa e envia um arquivo por vez, para caber no disco do GitHub mesmo com pacotes grandes
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "Pacote offline: $name" \
+              --notes "Cópia do pacote $name de $SRC, feita em $(date -u '+%d/%m/%Y')." --latest=false 2>/dev/null || true
+            for f in $(gh release view "$tag" --repo "$SRC" --json assets --jq '.assets[].name'); do
+              gh release download "$tag" --repo "$SRC" --pattern "$f" --dir "dl/$tag" --clobber
+              gh release upload "$tag" "dl/$tag/$f" --repo "$GITHUB_REPOSITORY" --clobber
+              echo "copiado: $f ($(du -h "dl/$tag/$f" | cut -f1))"
+              rm -f "dl/$tag/$f"
+            done
+            echo "::endgroup::"
+          done
