@@ -382,3 +382,61 @@ PATCHES.setdefault('MainActivity.kt', []).append((
 # location-based queries only to the community OpenStreetMap servers in Europe (not the mail.ru mirror)
 PATCHES.setdefault('Overpass.kt', []).append((
 '''        "https://maps.mail.ru/osm/tools/overpass/api/interpreter",\n''', ''))
+
+# ---- shared Google Maps links that carry only an address: read the place's coordinates from the Google Maps page itself ----
+PATCHES.setdefault('ExternalLinks.kt', []).extend([
+('''    /** Works out where to go (blocking: may follow a short link over the network). */''',
+'''    private fun isGoogle(u: String): Boolean = try {
+        val h = URL(u).host.lowercase()
+        Regex("^(www\\\\.|maps\\\\.)?google\\\\.[a-z.]{2,8}$").matches(h)
+    } catch (e: Exception) { false }
+
+    /**
+     * The coordinates of the place a Google Maps link shows, read from the Google Maps page itself, for links that only carry an
+     * address (e.g. "?q=Av. Tiúba, 1810B&ftid=…"), so the route goes straight there instead of re-searching the text.
+     * Null when it can't be read (no signal, or the page changed). Blocking.
+     */
+    private fun pagePos(u: String): LL? {
+        if (!isGoogle(u)) return null
+        return try {
+            val c = URL(u).openConnection() as HttpURLConnection
+            c.instanceFollowRedirects = true
+            c.connectTimeout = 8000; c.readTimeout = 10000
+            c.setRequestProperty("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36")
+            c.setRequestProperty("Accept-Language", "pt-BR,pt;q=0.9")
+            val html = c.inputStream.use { s ->
+                val b = ByteArray(1_500_000); var n = 0
+                while (n < b.size) { val r = s.read(b, n, b.size - n); if (r < 0) break; n += r }
+                String(b, 0, n, Charsets.UTF_8)
+            }
+            val fin = c.url.toString()
+            c.disconnect()
+            fun ok(a: String, b: String): LL? {
+                val la = a.toDoubleOrNull() ?: return null; val lo = b.toDoubleOrNull() ?: return null
+                return if (la in -90.0..90.0 && lo in -180.0..180.0 && !(la == 0.0 && lo == 0.0)) LL(la, lo) else null
+            }
+            // the exact place (in the final address or in the page), then the static preview image's centre, then the page's start view
+            placeRe.find(fin)?.let { m -> ok(m.groupValues[1], m.groupValues[2])?.let { return it } }
+            placeRe.find(html)?.let { m -> ok(m.groupValues[1], m.groupValues[2])?.let { return it } }
+            Regex("staticmap\\\\?center=(-?\\\\d+\\\\.\\\\d+)(?:%2C|,)(-?\\\\d+\\\\.\\\\d+)").find(html)?.let { m -> ok(m.groupValues[1], m.groupValues[2])?.let { return it } }
+            atRe.find(fin)?.let { m -> ok(m.groupValues[1], m.groupValues[2])?.let { return it } }
+            Regex("APP_INITIALIZATION_STATE=\\\\[\\\\[\\\\[-?\\\\d+(?:\\\\.\\\\d+)?,(-?\\\\d+\\\\.\\\\d+),(-?\\\\d+\\\\.\\\\d+)\\\\]").find(html)?.let { m -> ok(m.groupValues[2], m.groupValues[1])?.let { return it } }
+            null
+        } catch (e: Exception) { null }
+    }
+
+    /** Works out where to go (blocking: may follow a short link over the network). */'''),
+('''            val u = try { expand(link) } catch (e: Exception) { link }''',
+'''            var u = try { expand(link) } catch (e: Exception) { link }
+            // a cookie-consent stop on the way: the real address is in its "continue"
+            if (try { URL(u).host.lowercase().startsWith("consent.") } catch (e: Exception) { false }) u = param(u, "continue") ?: u'''),
+('''                if (k != "ll" && k != "center") return SharedTarget(null, name.ifBlank { v }, v)''',
+'''                if (k != "ll" && k != "center") {
+                    // only an address in the link: take the exact spot from Google's page, and search the text only if that fails
+                    pagePos(u)?.let { return SharedTarget(it, name.ifBlank { v }, null) }
+                    return SharedTarget(null, name.ifBlank { v }, v)
+                }'''),
+('''            if (name.isNotBlank()) return SharedTarget(null, name, name)''',
+'''            pagePos(u)?.let { return SharedTarget(it, name.ifBlank { before.ifBlank { "Local compartilhado" } }, null) }
+            if (name.isNotBlank()) return SharedTarget(null, name, name)'''),
+])
