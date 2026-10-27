@@ -575,3 +575,13 @@ PATCHES['ui/CarOverlay.kt'].extend([
             Box(Modifier.padding(start = 16.dp)) { end(40.dp) }
         }'''),
 ])
+
+# ---- phone: the app was sized for head-unit screens; on a phone the cards and text start at 80% (Settings > Tela changes it) ----
+PATCHES.setdefault('ui/App.kt', []).append((
+'''    val scale = prefs.i("uiscale", 100).coerceIn(60, 140) / 100f''',
+'''    val uiDef = if (androidx.compose.ui.platform.LocalConfiguration.current.smallestScreenWidthDp < 600) 80 else 100
+    val scale = prefs.i("uiscale", uiDef).coerceIn(60, 140) / 100f'''))
+PATCHES['ui/SettingsScreen.kt'].append((
+'''        SSlider("Tamanho de textos e botões", prefs.i("uiscale", 100).toFloat(), 60f..140f, "%", steps = 15, reset = 100f) { prefs.put("uiscale", it) }''',
+'''        val uiDef = if (androidx.compose.ui.platform.LocalConfiguration.current.smallestScreenWidthDp < 600) 80 else 100
+        SSlider("Tamanho de textos e botões", prefs.i("uiscale", uiDef).toFloat(), 60f..140f, "%", sub = "No celular começa em 80%", steps = 15, reset = uiDef.toFloat()) { prefs.put("uiscale", it) }'''))
