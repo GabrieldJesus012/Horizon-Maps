@@ -372,8 +372,11 @@ PATCHES.setdefault('MainActivity.kt', []).append((
 '''        if (tok.isNotEmpty()) try { com.mapbox.common.MapboxOptions.accessToken = tok } catch (e: Throwable) { }''',
 '''        if (tok.isNotEmpty()) try { com.mapbox.common.MapboxOptions.accessToken = tok } catch (e: Throwable) { }
         // no usage statistics to Mapbox (the map's own telemetry), unless turned back on with the (i) button on the map
+        // (looked up at run time, so a change in the Mapbox library can never break the build or the start-up)
         if (!prefs.b("mbtelemetryset", false)) try {
-            com.mapbox.maps.module.telemetry.MapTelemetryImpl(applicationContext).setUserTelemetryRequestState(false)
+            val tu = Class.forName("com.mapbox.common.TelemetryUtils")
+            val m = tu.methods.first { it.name == "setEventsCollectionState" && it.parameterTypes.firstOrNull() == Boolean::class.javaPrimitiveType }
+            m.invoke(null, false, *arrayOfNulls<Any>(m.parameterTypes.size - 1))
             prefs.put("mbtelemetryset", true)
         } catch (e: Throwable) { }'''))
 # location-based queries only to the community OpenStreetMap servers in Europe (not the mail.ru mirror)
