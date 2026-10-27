@@ -551,3 +551,27 @@ PATCHES['ui/CarOverlay.kt'].append((
                     guiding && tripPx > 0 && rowTop < turnBottom
                 }
                 Column('''))
+
+# ---- car trip card (wide screens): one fixed width for the route bar and the figures, the red X always in the right corner ----
+PATCHES['ui/CarOverlay.kt'].extend([
+    ('''    val w = if (fill) Modifier.fillMaxWidth() else Modifier.width(380.dp)
+    Column((if (fill) Modifier.fillMaxWidth() else Modifier).panel(10.dp, RoundedCornerShape(22.dp), c.surface)) {''',
+     '''    val w = if (fill) Modifier.fillMaxWidth() else Modifier.width(420.dp)
+    Column((if (fill) Modifier.fillMaxWidth() else Modifier.width(420.dp)).panel(10.dp, RoundedCornerShape(22.dp), c.surface)) {'''),
+    ('''        } else Row(Modifier.widthIn(min = 380.dp).padding(start = 18.dp, end = 12.dp, top = 9.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(22.dp)) {
+            ImmStat(Geo.fmtDur(e.secs), if (e.delayMin >= 1) "+${e.delayMin} min de trânsito" else "restante", dc)
+            ImmStat(e.arrive, "chegada", c.text)
+            ImmStat(Geo.fmtDist(e.dist, engine.imperial), "a percorrer", c.text)
+            end(40.dp)
+        }''',
+     '''        } else Row(Modifier.fillMaxWidth().padding(start = 18.dp, end = 12.dp, top = 9.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                ImmStat(Geo.fmtDur(e.secs), if (e.delayMin >= 1) "+${e.delayMin} min" else "restante", dc)
+                ImmStat(e.arrive, "chegada", c.text)
+                ImmStat(Geo.fmtDist(e.dist, engine.imperial), "a percorrer", c.text)
+            }
+            Box(Modifier.padding(start = 16.dp)) { end(40.dp) }
+        }'''),
+])
