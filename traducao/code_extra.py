@@ -478,3 +478,40 @@ PATCHES['ui/SettingsIndex.kt'].append((
 '''    SettingRef("Enviar para", "", "Compartilhar sua chegada", 4),
     SettingRef("Zoom do mapa no carro", "Prédios e ruas menores no Android Auto", "Android Auto", 8),
     SettingRef("Tamanho do veículo no carro", "Seta ou carro no Android Auto", "Android Auto", 8),'''))
+
+# ---- "Resume trip": never offer (or restart) a trip to a place you've already reached ----
+PATCHES['NavEngine.kt'].extend([
+    # once you've arrived, the trip isn't noted as "still running" any more
+    ('''        if (now - lastBeat < 20_000L || previewing || simMode != 0) return
+        lastBeat = now''',
+     '''        if (now - lastBeat < 20_000L || previewing || simMode != 0 || "end" in said) return
+        lastBeat = now'''),
+    ('''        if (atEnd && said.add("end")) {
+            toast("Você chegou", 5000)''',
+     '''        if (atEnd && said.add("end")) {
+            prefs.put("resume", "{}"); resume = null
+            toast("Você chegou", 5000)'''),
+    # on opening: carry on / offer to carry on only when you're not already at (or next to) that destination
+    ('''                scope.launch {
+                    var n = 0
+                    while (fix == null && n < 40) { delay(500); n++ }
+                    if (route != null) return@launch
+                    via = stops''',
+     '''                scope.launch {
+                    var n = 0
+                    while (fix == null && n < 40) { delay(500); n++ }
+                    if (route != null) return@launch
+                    fix?.let { f -> if (Geo.dist(f.pos, d.pos) < 400.0) { prefs.put("resume", "{}"); return@launch } }
+                    via = stops'''),
+    ('''                resume = Place(o.optString("n"), o.optString("s"), LL(o.getDouble("la"), o.getDouble("lo")))
+        } catch (e: Exception) { }''',
+     '''                Place(o.optString("n"), o.optString("s"), LL(o.getDouble("la"), o.getDouble("lo"))).let { rp ->
+                    resume = rp
+                    scope.launch {
+                        var n = 0
+                        while (fix == null && n < 40) { delay(500); n++ }
+                        fix?.let { f -> if (Geo.dist(f.pos, rp.pos) < 400.0 && resume === rp) { resume = null; prefs.put("resume", "{}") } }
+                    }
+                }
+        } catch (e: Exception) { }'''),
+])
