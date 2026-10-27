@@ -359,3 +359,23 @@ PATCHES.setdefault('PackRegions.kt', []).extend([
 val OWN_RELEASES: String get() = "https://github.com/${BuildConfig.UPDATE_REPO}/releases/download"
 val MIRRORED_PACKS: Set<String> = BuildConfig.MIRRORED_PACKS.split(',').map { it.trim() }.filter { it.isNotEmpty() }.toSet()'''),
 ])
+
+# ---- security / privacy hardening ----
+# Android Auto: only the real car hosts (Android Auto, Android Automotive) may connect, not any app on the phone
+PATCHES.setdefault('car/CarNav.kt', []).append((
+'''    override fun createHostValidator(): HostValidator = HostValidator.ALLOW_ALL_HOSTS_VALIDATOR''',
+'''    // only Google's car hosts (Android Auto and Android Automotive) may connect, so no other app on the phone can drive it or read its screen
+    override fun createHostValidator(): HostValidator =
+        HostValidator.Builder(applicationContext).addAllowedHosts(androidx.car.app.R.array.hosts_allowlist_sample).build()'''))
+# Mapbox usage statistics ("de-identified location and usage data") opted out by default
+PATCHES.setdefault('MainActivity.kt', []).append((
+'''        if (tok.isNotEmpty()) try { com.mapbox.common.MapboxOptions.accessToken = tok } catch (e: Throwable) { }''',
+'''        if (tok.isNotEmpty()) try { com.mapbox.common.MapboxOptions.accessToken = tok } catch (e: Throwable) { }
+        // no usage statistics to Mapbox (the map's own telemetry), unless turned back on with the (i) button on the map
+        if (!prefs.b("mbtelemetryset", false)) try {
+            com.mapbox.maps.module.telemetry.MapTelemetryImpl(applicationContext).setUserTelemetryRequestState(false)
+            prefs.put("mbtelemetryset", true)
+        } catch (e: Throwable) { }'''))
+# location-based queries only to the community OpenStreetMap servers in Europe (not the mail.ru mirror)
+PATCHES.setdefault('Overpass.kt', []).append((
+'''        "https://maps.mail.ru/osm/tools/overpass/api/interpreter",\n''', ''))
