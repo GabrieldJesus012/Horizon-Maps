@@ -48,7 +48,13 @@ jobs:
         env:
           MAPBOX_DOWNLOADS_TOKEN: ${{ secrets.MAPBOX_DOWNLOADS_TOKEN }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        run: gradle :app:assembleRelease -PtomtomApiKey="${{ secrets.TOMTOM_API_KEY }}"
+        run: |
+          set -o pipefail
+          # on a failure the compiler errors are also shown as annotations at the top of the run (easier to read on a phone)
+          gradle :app:assembleRelease -PtomtomApiKey="${{ secrets.TOMTOM_API_KEY }}" 2>&1 | tee build.log || {
+            grep -E '^e: |error:|What went wrong' -A2 build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done
+            exit 1
+          }
       - name: Check the APK is signed with our key
         run: |
           APK="${{ env.PROJECT }}/app/build/outputs/apk/release/HorizonNav-BR.apk"
