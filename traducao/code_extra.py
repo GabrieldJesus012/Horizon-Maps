@@ -440,3 +440,41 @@ PATCHES.setdefault('ExternalLinks.kt', []).extend([
 '''            pagePos(u)?.let { return SharedTarget(it, name.ifBlank { before.ifBlank { "Local compartilhado" } }, null) }
             if (name.isNotBlank()) return SharedTarget(null, name, name)'''),
 ])
+
+# ---- Android Auto screen: drag direction, map/vehicle size, vehicle position ----
+PATCHES['car/CarNav.kt'].extend([
+    # Android Auto reports a drag as "old position minus new" (like Android's GestureDetector): the map must move the other way
+    ('''        try { m.panBy(distanceX, distanceY) } catch (e: Exception) { }''',
+     '''        try { m.panBy(-distanceX, -distanceY) } catch (e: Exception) { }'''),
+    # map scale on the car screen: the old fixed scale drew buildings and the vehicle far too big on wide screens; adjustable in Settings
+    ('''            val ratio = (dens * 1.7f).coerceIn(1.6f, 3.2f)''',
+     '''            val carMapPct = Prefs(carContext.applicationContext).i("carmapscale", 70).coerceIn(40, 150) / 100f
+            val ratio = ((dens * 1.7f).coerceIn(1.6f, 3.2f) * carMapPct).coerceAtLeast(0.8f)'''),
+    # the vehicle on the car screen has its own size (smaller than on the phone by default)
+    ('''        map.setArrowScale((prefs.s("arrowpct", "240").toIntOrNull() ?: 240) / 100f)
+        // the same map look''',
+     '''        map.setArrowScale((prefs.i("cararrowpct", 160).coerceIn(60, 300)) / 100f)
+        // the same map look'''),
+])
+PATCHES['NavEngine.kt'].extend([
+    # the car screen always draws its cards on the left: the vehicle moves right to clear them, even in a left-hand-drive country
+    ('''            if (p[1] < y + band && p[3] > y - band) cover = max(cover, if (mirrored) (1.0 - p[0]) else p[2].toDouble())''',
+     '''            if (p[1] < y + band && p[3] > y - band) cover = max(cover, if (mirrored && !isCar) (1.0 - p[0]) else p[2].toDouble())'''),
+    ('''        return if (mirrored) -shift else shift''',
+     '''        return if (mirrored && !isCar) -shift else shift'''),
+    ('''        map.cardsMirrored = mirrored''', '''        map.cardsMirrored = mirrored && !isCar'''),
+    # on the wide car screen the vehicle sits a little higher, so it isn't cut off at the bottom edge
+    ('''        tTilt = tilt; tPad = pad''',
+     '''        if (isCar) pad = minOf(pad, 0.45)
+        tTilt = tilt; tPad = pad'''),
+])
+PATCHES['ui/SettingsScreen.kt'].append((
+'''        SItem("Instalado por", source)''',
+'''        SSlider("Zoom do mapa no carro", prefs.i("carmapscale", 70).toFloat(), 40f..150f, "%", sub = "Menor mostra mais área, com prédios e ruas menores. Vale ao reconectar no carro", steps = 21, reset = 70f) { prefs.put("carmapscale", it) }
+        SSlider("Tamanho do veículo no carro", prefs.i("cararrowpct", 160).toFloat(), 60f..300f, "%", sub = "Vale ao reconectar no carro", steps = 23, reset = 160f) { prefs.put("cararrowpct", it) }
+        SItem("Instalado por", source)'''))
+PATCHES['ui/SettingsIndex.kt'].append((
+'''    SettingRef("Enviar para", "", "Compartilhar sua chegada", 4),''',
+'''    SettingRef("Enviar para", "", "Compartilhar sua chegada", 4),
+    SettingRef("Zoom do mapa no carro", "Prédios e ruas menores no Android Auto", "Android Auto", 8),
+    SettingRef("Tamanho do veículo no carro", "Seta ou carro no Android Auto", "Android Auto", 8),'''))
