@@ -515,3 +515,39 @@ PATCHES['NavEngine.kt'].extend([
                 }
         } catch (e: Exception) { }'''),
 ])
+
+# ---- car screen (wide): the sound pill and hazard badges no longer run into a tall turn card ----
+PATCHES.setdefault('ui/CarOverlay.kt', []).append((
+'''                    if (guiding) FasterCard(engine, Modifier.widthIn(max = 520.dp))
+                    SoundPill(engine)
+                    hazards()
+                    if (guiding) TripCard(engine, false)
+                }''',
+'''                    // sound and hazards side by side above the trip card; on a short screen where that would run into the turn card
+                    // (e.g. with the "then…" line or the lane picture), they go beside the trip card instead
+                    Box(Modifier.onSizeChanged { fastPx = it.height }) { if (guiding) FasterCard(engine, Modifier.widthIn(max = 520.dp)) }
+                    if (!side) Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        SoundPill(engine)
+                        hazards()
+                    }
+                    if (guiding) Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Bottom) {
+                        Box(Modifier.onSizeChanged { tripPx = it.height }) { TripCard(engine, false) }
+                        if (side) Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            hazards()
+                            SoundPill(engine)
+                        }
+                    }
+                }'''))
+PATCHES['ui/CarOverlay.kt'].append((
+'''                var speedW by remember { mutableStateOf(0) }
+                Column(''',
+'''                var speedW by remember { mutableStateOf(0) }
+                var tripPx by remember { mutableStateOf(0) }
+                var fastPx by remember { mutableStateOf(0) }
+                val side = with(dens) {
+                    val gap = 10.dp.toPx()
+                    val turnBottom = top.toPx() + (if (showTurn) turnH + gap else 0f)
+                    val rowTop = hPx - bottom.toPx() - tripPx - (if (fastPx > 0) fastPx + gap else 0f) - gap - 46.dp.toPx()
+                    guiding && tripPx > 0 && rowTop < turnBottom
+                }
+                Column('''))
