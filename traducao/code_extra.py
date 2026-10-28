@@ -677,3 +677,6 @@ PATCHES['ui/CarOverlay.kt'].append(('''import androidx.compose.material.icons.ro
 ''', '''import androidx.compose.material.icons.rounded.Route
 import androidx.compose.material.icons.rounded.Dashboard
 '''))
+# dashboard map window: a step further out, so the small window shows the streets around you
+PATCHES['NavEngine.kt'].append(('''        tZoom = autoZoom(sp, navigating) + zoomOffset''',
+'''        tZoom = autoZoom(sp, navigating) + zoomOffset - (if (isCar && carDash && route == null) 1.2 else 0.0)'''))

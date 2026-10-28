@@ -145,7 +145,7 @@ internal fun CarDashboard(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             // ---- left: clock, gauges with the car in the middle, buttons ----
-            Column(Modifier.weight(0.63f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.weight(0.6f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 ClockCard(now, Modifier.fillMaxWidth().weight(0.20f))
                 Row(Modifier.fillMaxWidth().weight(0.62f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -167,10 +167,10 @@ internal fun CarDashboard(
                 }
             }
             // ---- right: the music (top), the live map window (bottom) ----
-            Column(Modifier.weight(0.37f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                MusicCard(ctx, Modifier.fillMaxWidth().weight(0.46f))
+            Column(Modifier.weight(0.4f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                MusicCard(ctx, Modifier.fillMaxWidth().weight(0.4f))
                 Box(
-                    Modifier.fillMaxWidth().weight(0.54f).border(2.dp, DEdge, RoundedCornerShape(corner))
+                    Modifier.fillMaxWidth().weight(0.6f).border(2.dp, DEdge, RoundedCornerShape(corner))
                         .onGloballyPositioned { lc ->
                             val r = lc.boundsInRoot()
                             win = r
