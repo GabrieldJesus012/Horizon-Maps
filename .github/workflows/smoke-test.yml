@@ -5,7 +5,7 @@ name: Teste no emulador
 on:
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   emulator:
     runs-on: ubuntu-24.04
@@ -61,6 +61,7 @@ jobs:
           echo "app process: $pidof"
           grep -E "FATAL EXCEPTION|AndroidRuntime: |NavEngine: (trip failed|road info failed)" out/logcat.txt | head -40 > out/erros.txt || true
           cat out/erros.txt
+          grep -E "$APP|NavEngine" out/logcat.txt | grep -E " E | W " | tail -60 > out/avisos.txt || true
           if grep -q "FATAL EXCEPTION" out/logcat.txt && grep -A3 "FATAL EXCEPTION" out/logcat.txt | grep -q "$APP"; then echo "::error::O app travou (veja logcat.txt)"; exit 1; fi
           if grep -q "trip failed" out/logcat.txt; then echo "::error::Erro na contagem de km (veja logcat.txt)"; exit 1; fi
           [ -n "$pidof" ] || { echo "::error::O app não está aberto no fim do teste"; exit 1; }
@@ -81,3 +82,13 @@ jobs:
         with:
           name: teste-emulador
           path: out/
+      # the screenshots and the log also go on a "teste-emulador" release (easy to open from a phone)
+      - name: Publish the results
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create teste-emulador --repo "${{ github.repository }}" --title "Teste no emulador" --notes "Resultado do último teste" --prerelease --latest=false 2>/dev/null || true
+          gh release edit teste-emulador --repo "${{ github.repository }}" --notes "Resultado do teste de $(date -u '+%d/%m/%Y %H:%M') UTC"
+          [ -f out/logcat.txt ] && gzip -kf out/logcat.txt
+          for f in out/*.png out/erros.txt out/avisos.txt out/logcat.txt.gz; do [ -f "$f" ] && gh release upload teste-emulador "$f" --repo "${{ github.repository }}" --clobber; done
