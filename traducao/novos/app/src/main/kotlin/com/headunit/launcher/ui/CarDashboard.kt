@@ -77,6 +77,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
+/** Text sized from the card, the same whatever the phone's own font size setting is (so it always fits its card). */
+@Composable
+private fun Float.tsp(): androidx.compose.ui.unit.TextUnit = (this / androidx.compose.ui.platform.LocalDensity.current.fontScale).sp
+
 // the dashboard's own look: deep navy with glowing blue edges (always, day or night)
 private val DBg = Brush.verticalGradient(listOf(Color(0xFF0B1636), Color(0xFF07102A)))
 private val DCard = Brush.verticalGradient(listOf(Color(0xFF15275A), Color(0xFF0D1A3E)))
@@ -196,13 +200,13 @@ private fun ClockCard(now: Long, modifier: Modifier) {
     DashCard(modifier) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val mh = maxHeight.value
-            val big = (mh * 0.58f).coerceIn(18f, 44f).sp
+            val big = (mh * 0.58f).coerceIn(18f, 44f).tsp()
             Row(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(time, color = DText, fontSize = big, fontWeight = FontWeight.Bold, fontFamily = DFont, maxLines = 1)
                 Box(Modifier.padding(horizontal = 14.dp).width(2.dp).fillMaxHeight(0.6f).background(DBlue))
                 Column(Modifier.weight(1f)) {
-                    Text(day, color = DBlue, fontSize = (mh * 0.2f).coerceIn(9f, 14f).sp, fontWeight = FontWeight.Bold, fontFamily = DFont, letterSpacing = 1.sp, maxLines = 1)
-                    Text(date, color = DText, fontSize = (mh * 0.25f).coerceIn(10f, 17f).sp, fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(day, color = DBlue, fontSize = (mh * 0.2f).coerceIn(9f, 14f).tsp(), fontWeight = FontWeight.Bold, fontFamily = DFont, letterSpacing = 1.sp, maxLines = 1)
+                    Text(date, color = DText, fontSize = (mh * 0.25f).coerceIn(10f, 17f).tsp(), fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
@@ -235,14 +239,14 @@ private fun Gauge(label: String, value: String, unit: String, frac: Float, color
                 val f = frac.coerceIn(0f, 1f)
                 if (f > 0.005f) drawArc(Brush.horizontalGradient(colors, startX = tl.x, endX = tl.x + sz.width), 150f, 240f * f, false, tl, sz, style = Stroke(stroke, cap = StrokeCap.Round))
             }
-            Text(label, color = DSub, fontSize = labelSp.sp, fontWeight = FontWeight.Bold, fontFamily = DFont, letterSpacing = 1.sp, maxLines = 1,
+            Text(label, color = DSub, fontSize = labelSp.tsp(), fontWeight = FontWeight.Bold, fontFamily = DFont, letterSpacing = 1.sp, maxLines = 1,
                 overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = (h * 0.04f).dp, start = 6.dp, end = 6.dp))
             Column(Modifier.align(Alignment.TopCenter).padding(top = (cy - d * 0.2f).coerceAtLeast(0f).dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(value, color = DText, fontSize = (d * 0.26f).coerceIn(10f, 34f).sp, fontWeight = FontWeight.Bold, fontFamily = DFont, maxLines = 1)
-                if (unit.isNotEmpty()) Text(unit, color = DSub, fontSize = (d * 0.1f).coerceIn(7f, 12f).sp, fontFamily = DFont, maxLines = 1)
+                Text(value, color = DText, fontSize = (d * 0.26f).coerceIn(10f, 34f).tsp(), fontWeight = FontWeight.Bold, fontFamily = DFont, maxLines = 1)
+                if (unit.isNotEmpty()) Text(unit, color = DSub, fontSize = (d * 0.1f).coerceIn(7f, 12f).tsp(), fontFamily = DFont, maxLines = 1)
             }
-            if (!foot.isNullOrEmpty()) Text(foot, color = DSub, fontSize = footSp.sp, fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            if (!foot.isNullOrEmpty()) Text(foot, color = DSub, fontSize = footSp.tsp(), fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = (h * 0.04f).dp, start = 6.dp, end = 6.dp))
         }
     }
@@ -338,7 +342,7 @@ private fun DashButton(icon: ImageVector, label: String, id: String, modifier: M
             val h = maxHeight.value
             Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 Icon(icon, null, tint = DBlue, modifier = Modifier.size((h * 0.38f).coerceIn(14f, 26f).dp))
-                Text(label.uppercase(), color = DText, fontSize = (h * 0.17f).coerceIn(7f, 11f).sp, fontWeight = FontWeight.Bold, fontFamily = DFont,
+                Text(label.uppercase(), color = DText, fontSize = (h * 0.17f).coerceIn(7f, 11f).tsp(), fontWeight = FontWeight.Bold, fontFamily = DFont,
                     letterSpacing = 0.5.sp, maxLines = 1, modifier = Modifier.padding(top = 2.dp))
             }
         }
@@ -371,8 +375,8 @@ private fun MusicCard(ctx: android.content.Context, modifier: Modifier) {
                     }
                     Column(Modifier.weight(1f).padding(start = 12.dp)) {
                         Text((NowPlaying.app.ifBlank { "Música" }).uppercase(), color = DBlue, fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = DFont, letterSpacing = 1.sp, maxLines = 1)
-                        Text(NowPlaying.title.ifBlank { "Nada tocando" }, color = DText, fontSize = (h * 0.13f).coerceIn(11f, 18f).sp, fontWeight = FontWeight.Bold, fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        if (NowPlaying.artist.isNotBlank()) Text(NowPlaying.artist, color = DSub, fontSize = (h * 0.1f).coerceIn(9f, 13f).sp, fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(NowPlaying.title.ifBlank { "Nada tocando" }, color = DText, fontSize = (h * 0.13f).coerceIn(11f, 18f).tsp(), fontWeight = FontWeight.Bold, fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        if (NowPlaying.artist.isNotBlank()) Text(NowPlaying.artist, color = DSub, fontSize = (h * 0.1f).coerceIn(9f, 13f).tsp(), fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
                 val d = NowPlaying.duration
