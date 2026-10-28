@@ -165,7 +165,7 @@ internal fun CarDashboard(
 }
 
 @Composable
-private fun DashCard(modifier: Modifier, content: @Composable () -> Unit) {
+private fun DashCard(modifier: Modifier, content: @Composable androidx.compose.foundation.layout.BoxScope.() -> Unit) {
     val c = LocalVw.current
     Box(modifier.clip(RoundedCornerShape(20.dp)).background(c.surface).border(1.dp, c.line.copy(alpha = 0.6f), RoundedCornerShape(20.dp))) { content() }
 }

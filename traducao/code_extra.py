@@ -673,3 +673,7 @@ PATCHES['ui/SettingsScreen.kt'].append((
             SButton(if (np.value) "Abrir" else "Permitir", primary = !np.value) { openSystemSettings(ctx, "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS") }
         }
         SItem("Instalado por", source)'''))
+PATCHES['ui/CarOverlay.kt'].append(('''import androidx.compose.material.icons.rounded.Route
+''', '''import androidx.compose.material.icons.rounded.Route
+import androidx.compose.material.icons.rounded.Dashboard
+'''))
