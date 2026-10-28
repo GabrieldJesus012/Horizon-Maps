@@ -147,7 +147,7 @@ internal fun CarDashboard(
             // ---- left: clock, gauges with the car in the middle, buttons ----
             Column(Modifier.weight(0.6f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 ClockCard(now, Modifier.fillMaxWidth().weight(0.20f))
-                Row(Modifier.fillMaxWidth().weight(0.62f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(Modifier.fillMaxWidth().weight(0.68f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         SpeedGauge(engine, Modifier.weight(1f).fillMaxWidth())
                         WeatherGauge(wx, Modifier.weight(1f).fillMaxWidth())
@@ -158,7 +158,7 @@ internal fun CarDashboard(
                         FuelGauge(engine, Modifier.weight(1f).fillMaxWidth())
                     }
                 }
-                Row(Modifier.fillMaxWidth().weight(0.18f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(Modifier.fillMaxWidth().weight(0.12f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     DashButton(Icons.Rounded.Search, "Buscar", "dash-search", Modifier.weight(1f)) { actions.search() }
                     DashButton(Icons.Rounded.Star, "Locais", "dash-places", Modifier.weight(1f)) { actions.places() }
                     DashButton(Icons.Rounded.Map, "Mapa", "dash-map", Modifier.weight(1f)) { engine.carDash = false }
@@ -350,14 +350,10 @@ private fun CarTile(modifier: Modifier) {
 
 @Composable
 private fun DashButton(icon: ImageVector, label: String, id: String, modifier: Modifier, action: () -> Unit) {
+    // icon only (the label is kept for screen readers)
     DashCard(modifier.fillMaxHeight().carTap(id, action)) {
-        BoxWithConstraints(Modifier.fillMaxSize()) {
-            val h = maxHeight.value
-            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                Icon(icon, null, tint = DBlue, modifier = Modifier.size((h * 0.38f).coerceIn(14f, 26f).dp))
-                Text(label.uppercase(), color = DText, fontSize = (h * 0.17f).coerceIn(7f, 11f).tsp(), fontWeight = FontWeight.Bold, fontFamily = DFont,
-                    letterSpacing = 0.5.sp, maxLines = 1, modifier = Modifier.padding(top = 2.dp))
-            }
+        BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Icon(icon, label, tint = DBlue, modifier = Modifier.size((maxHeight.value * 0.55f).coerceIn(16f, 32f).dp))
         }
     }
 }
