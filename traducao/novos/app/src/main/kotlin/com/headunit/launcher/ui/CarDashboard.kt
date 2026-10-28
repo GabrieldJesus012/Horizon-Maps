@@ -222,19 +222,21 @@ private fun Gauge(label: String, value: String, unit: String, frac: Float, color
     DashCard(modifier) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val h = maxHeight.value; val w = maxWidth.value
-            val labelSp = (h * 0.11f).coerceIn(7f, 12f)
-            val footSp = (h * 0.10f).coerceIn(7f, 11f)
-            // the ring: as big as fits under the label and over the note
-            val ringTop = h * 0.17f
-            val ringBottom = h * (if (foot.isNullOrEmpty()) 0.96f else 0.86f)
-            val d = minOf(w * 0.86f, (ringBottom - ringTop) * 1.12f)
-            val cx = w / 2f; val cy = ringTop + d / 2f
+            val labelSp = (h * 0.11f).coerceIn(8f, 12f)
+            val footSp = (h * 0.12f).coerceIn(8f, 13f)
+            // three bands that never overlap: the label on top, the ring in the middle (its open ends sit just above the note), the note
+            val ringTop = h * 0.19f
+            val footTop = if (foot.isNullOrEmpty()) h * 0.96f else h * 0.80f
+            // the ring's height from its top to its open ends is 1.5 × its radius
+            val r = minOf(w * 0.40f, (footTop - ringTop) / 1.5f)
+            val d = 2f * r
+            val cx = w / 2f; val cy = ringTop + r
             Canvas(Modifier.fillMaxSize()) {
                 val px = density
-                val r = d * px / 2f
+                val rp = r * px
                 val stroke = (d * px * 0.085f).coerceAtLeast(3f)
-                val tl = Offset(cx * px - r + stroke / 2f, cy * px - r + stroke / 2f)
-                val sz = Size(2f * r - stroke, 2f * r - stroke)
+                val tl = Offset(cx * px - rp + stroke / 2f, cy * px - rp + stroke / 2f)
+                val sz = Size(2f * rp - stroke, 2f * rp - stroke)
                 drawArc(DTrack, 150f, 240f, false, tl, sz, style = Stroke(stroke, cap = StrokeCap.Round))
                 val f = frac.coerceIn(0f, 1f)
                 if (f > 0.005f) drawArc(Brush.horizontalGradient(colors, startX = tl.x, endX = tl.x + sz.width), 150f, 240f * f, false, tl, sz, style = Stroke(stroke, cap = StrokeCap.Round))
@@ -242,12 +244,23 @@ private fun Gauge(label: String, value: String, unit: String, frac: Float, color
             Text(label, color = DSub, fontSize = labelSp.tsp(), fontWeight = FontWeight.Bold, fontFamily = DFont, letterSpacing = 1.sp, maxLines = 1,
                 overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = (h * 0.04f).dp, start = 6.dp, end = 6.dp))
-            Column(Modifier.align(Alignment.TopCenter).padding(top = (cy - d * 0.2f).coerceAtLeast(0f).dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(value, color = DText, fontSize = (d * 0.26f).coerceIn(10f, 34f).tsp(), fontWeight = FontWeight.Bold, fontFamily = DFont, maxLines = 1)
-                if (unit.isNotEmpty()) Text(unit, color = DSub, fontSize = (d * 0.1f).coerceIn(7f, 12f).tsp(), fontFamily = DFont, maxLines = 1)
-            }
-            if (!foot.isNullOrEmpty()) Text(foot, color = DSub, fontSize = footSp.tsp(), fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = (h * 0.04f).dp, start = 6.dp, end = 6.dp))
+            // the figure in the middle of the ring, with its unit small beside it (no second line, so nothing can collide)
+            val valSp = (d * 0.30f).coerceIn(10f, 32f)
+            Text(
+                androidx.compose.ui.text.buildAnnotatedString {
+                    append(value)
+                    if (unit.isNotEmpty()) {
+                        pushStyle(androidx.compose.ui.text.SpanStyle(fontSize = (valSp * 0.36f).tsp(), color = DSub, fontWeight = FontWeight.Normal))
+                        append(" " + unit)
+                        pop()
+                    }
+                },
+                color = DText, fontSize = valSp.tsp(), fontWeight = FontWeight.Bold, fontFamily = DFont, maxLines = 1,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = (cy - valSp * 0.62f).coerceAtLeast(0f).dp),
+            )
+            if (!foot.isNullOrEmpty()) Text(foot, color = DText.copy(alpha = 0.85f), fontSize = footSp.tsp(), fontWeight = FontWeight.Medium, fontFamily = DFont,
+                maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = (footTop + h * 0.02f).dp, start = 8.dp, end = 8.dp))
         }
     }
 }
