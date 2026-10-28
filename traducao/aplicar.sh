@@ -6,6 +6,7 @@
 set -e
 cd "$(dirname "$0")"
 K="$1/app/src/main/kotlin/com/headunit/launcher"
+cp -r novos/app "$1/"
 python3 genindex.py
 python3 apply.py "$K" mapas/*.txt
 python3 patch_code.py "$K" code_extra.py

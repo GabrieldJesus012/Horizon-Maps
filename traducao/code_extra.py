@@ -585,3 +585,91 @@ PATCHES['ui/SettingsScreen.kt'].append((
 '''        SSlider("Tamanho de textos e botões", prefs.i("uiscale", 100).toFloat(), 60f..140f, "%", steps = 15, reset = 100f) { prefs.put("uiscale", it) }''',
 '''        val uiDef = if (androidx.compose.ui.platform.LocalConfiguration.current.smallestScreenWidthDp < 600) 80 else 100
         SSlider("Tamanho de textos e botões", prefs.i("uiscale", uiDef).toFloat(), 60f..140f, "%", sub = "No celular começa em 80%", steps = 15, reset = uiDef.toFloat()) { prefs.put("uiscale", it) }'''))
+
+# ---- car home dashboard (ui/CarDashboard.kt, NowPlaying.kt) ----
+PATCHES['NavEngine.kt'].extend([
+    ('''    var advice by mutableStateOf<String?>(null)
+''',
+     '''    var advice by mutableStateOf<String?>(null)
+    /** Car screen: the home dashboard is showing (on connecting, and again whenever a route ends); "Mapa" closes it. */
+    var carDash by mutableStateOf(true)
+    /** Where the dashboard's map window is (as the camera's side padding and the arrow's height), so your arrow sits in it. */
+    @Volatile var dashLeft = 0.62
+    @Volatile var dashPad = 0.45
+    /** The car's own fuel level (%) and range (m), when the car reports them to Android Auto. */
+    var carFuelPct by mutableStateOf<Float?>(null)
+    var carRangeM by mutableStateOf<Float?>(null)
+    /** Distance (m) and time moving (s) driven today: the trips saved today plus the one being driven now. */
+    fun kmToday(): Pair<Double, Long> {
+        val cal = java.util.Calendar.getInstance().apply { set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0) }
+        val today = trips.all().filter { it.start >= cal.timeInMillis }
+        var d = today.sumOf { it.dist }; var s = today.sumOf { it.moving }
+        if (tripOn && tripT0 >= cal.timeInMillis) { d += tripDistance; s += tripMoveSec }
+        return d to s
+    }
+'''),
+    ('''        tLeft = if (bottomCover <= 0.0) arrowShift((1.0 + pad) / 2.0) else 0.0''',
+     '''        tLeft = if (isCar && carDash && route == null) dashLeft else if (bottomCover <= 0.0) arrowShift((1.0 + pad) / 2.0) else 0.0'''),
+    ('''        if (isCar) pad = minOf(pad, 0.45)
+''',
+     '''        if (isCar) pad = minOf(pad, 0.45)
+        if (isCar && carDash && route == null) pad = dashPad
+'''),
+])
+PATCHES['ui/CarOverlay.kt'].extend([
+    ('''        val stackShown = portrait && !previewing && !arriving
+''',
+     '''        val stackShown = portrait && !previewing && !arriving
+        // the home dashboard: when the app opens on the car, and again whenever a route ends
+        androidx.compose.runtime.LaunchedEffect(guiding) { if (!guiding) engine.carDash = true }
+        if (!portrait && engine.carDash && engine.route == null && !previewing && !arriving) {
+            CarDashboard(engine, actions, left, top, insR + 16.dp, bottom, vL, vT, vW, vH)
+            return@BoxWithConstraints
+        }
+'''),
+    # a "Painel" chip on the map to go back to the dashboard
+    ('''            Box(Modifier.carTap("home") { if (home != null) engine.startRoute(home) else actions.search() }) {''',
+     '''            Box(Modifier.carTap("dash") { engine.carDash = true }) {
+                ImmChip(androidx.compose.material.icons.Icons.Rounded.Dashboard, Color(0xFF8E5CF0), "Painel") {}
+            }
+            Box(Modifier.carTap("home") { if (home != null) engine.startRoute(home) else actions.search() }) {'''),
+])
+PATCHES['car/CarNav.kt'].extend([
+    ('''        engine.isCar = true
+''',
+     '''        engine.isCar = true
+        startCarEnergy(engine)
+'''),
+    ('''    override fun onCarConfigurationChanged(newConfiguration: Configuration) {''',
+     '''    /** The car's fuel level and range for the dashboard, when the car reports them to Android Auto (asks once for permission). */
+    private fun startCarEnergy(engine: NavEngine) {
+        fun listen() {
+            try {
+                val info = carContext.getCarService(androidx.car.app.hardware.CarHardwareManager::class.java).carInfo
+                info.addEnergyLevelListener(androidx.core.content.ContextCompat.getMainExecutor(carContext),
+                    androidx.car.app.hardware.common.OnCarDataAvailableListener<androidx.car.app.hardware.info.EnergyLevel> { d ->
+                        val ok = androidx.car.app.hardware.common.CarValue.STATUS_SUCCESS
+                        engine.carFuelPct = d.fuelPercent.let { v -> if (v.status == ok) v.value else null }
+                        engine.carRangeM = d.rangeRemainingMeters.let { v -> if (v.status == ok) v.value else null }
+                    })
+            } catch (e: Throwable) { }
+        }
+        val perm = "com.google.android.gms.permission.CAR_FUEL"
+        try {
+            if (carContext.checkSelfPermission(perm) == android.content.pm.PackageManager.PERMISSION_GRANTED) listen()
+            else carContext.requestPermissions(listOf(perm)) { granted, _ -> if (perm in granted) listen() }
+        } catch (e: Throwable) { listen() }
+    }
+
+    override fun onCarConfigurationChanged(newConfiguration: Configuration) {'''),
+])
+# phone settings: allow the music card on the car dashboard
+PATCHES['ui/SettingsScreen.kt'].append((
+'''        SItem("Instalado por", source)''',
+'''        val np = remember { mutableStateOf(com.headunit.launcher.NowPlaying.isAllowed(ctx)) }
+        androidx.compose.runtime.LaunchedEffect(Unit) { while (true) { np.value = com.headunit.launcher.NowPlaying.isAllowed(ctx); kotlinx.coroutines.delay(2000) } }
+        SItem("Música no painel do carro", if (np.value) "Permitido: o painel mostra e controla a música que está tocando"
+            else "Permita o \\"acesso a notificações\\" para o painel mostrar e controlar o Spotify. O app não lê nem guarda notificações. Se o Android bloquear, abra Informações do app › ⋮ › Permitir configurações restritas") {
+            SButton(if (np.value) "Abrir" else "Permitir", primary = !np.value) { openSystemSettings(ctx, "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS") }
+        }
+        SItem("Instalado por", source)'''))
