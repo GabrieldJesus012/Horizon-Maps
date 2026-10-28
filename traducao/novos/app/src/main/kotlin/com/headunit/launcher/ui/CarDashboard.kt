@@ -195,13 +195,14 @@ private fun ClockCard(now: Long, modifier: Modifier) {
     val date = java.text.SimpleDateFormat("d 'de' MMMM 'de' yyyy", br).format(java.util.Date(now))
     DashCard(modifier) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
-            val big = (maxHeight.value * 0.58f).coerceIn(18f, 44f).sp
+            val mh = maxHeight.value
+            val big = (mh * 0.58f).coerceIn(18f, 44f).sp
             Row(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(time, color = DText, fontSize = big, fontWeight = FontWeight.Bold, fontFamily = DFont, maxLines = 1)
                 Box(Modifier.padding(horizontal = 14.dp).width(2.dp).fillMaxHeight(0.6f).background(DBlue))
                 Column(Modifier.weight(1f)) {
-                    Text(day, color = DBlue, fontSize = (maxHeight.value * 0.2f).coerceIn(9f, 14f).sp, fontWeight = FontWeight.Bold, fontFamily = DFont, letterSpacing = 1.sp, maxLines = 1)
-                    Text(date, color = DText, fontSize = (maxHeight.value * 0.25f).coerceIn(10f, 17f).sp, fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(day, color = DBlue, fontSize = (mh * 0.2f).coerceIn(9f, 14f).sp, fontWeight = FontWeight.Bold, fontFamily = DFont, letterSpacing = 1.sp, maxLines = 1)
+                    Text(date, color = DText, fontSize = (mh * 0.25f).coerceIn(10f, 17f).sp, fontFamily = DFont, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
